@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+// No server-side checks to prevent loops
+---
+
+<BaseLayout title="Post Project">
+  
+  <div id="auth-loading" class="min-h-[60vh] flex flex-col items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-neutral-900 dark:border-white mb-4"></div>
+    <p class="text-neutral-500 text-sm animate-pulse">Verifying account...</p>
+  </div>
+
+  <div id="post-content" class="max-w-xl mx-auto py-12 hidden">
+    <div class="animate-fade-in-up">
+        <h1 class="text-3xl font-bold mb-2">Post new work</h1>
+        <p class="text-neutral-500 mb-8">Share your latest creation with the community.</p>
+    </div>
+    
+    <form id="upload-form" class="space-y-6 animate-fade-in-up delay-100">
+      
+      <div class="group">
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Project Title</label>
+        <input type="text" id="title" class="input-field w-full" placeholder="e.g. Neon Horizon" required />
+      </div>
+
+      <div class="group">
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Category</label>
+        <div class="relative">
+          <select id="category" class="input-field w-full appearance-none cursor-pointer" required>
+            <option value="" disabled selected>Select a category...</option>
+            <option value="Web Design">Web Design</option>
+            <option value="Mobile Apps">Mobile Apps</option>
+            <option value="Illustration">Illustration</option>
+            <option value="AI Art">AI Art</option>
+            <option value="Branding">Branding</option>
+            <option value="3D Motion">3D Motion</option>
+            <option value="Photography">Photography</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-neutral-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Description</label>
+        <textarea id="description" rows="4" class="input-field w-full resize-none" placeholder="Share your process, tools used, or inspiration..." required></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Media</label>
+        <div class="relative group cursor-pointer">
+            <input type="file" id="file-input" accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer" />
+            <div id="drop-zone" class="w-full aspect-video rounded-xl bg-neutral-50 dark:bg-neutral-800 border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center transition-all group-hover:border-neutral-900 dark:group-hover:border-white overflow-hidden relative">
+                <div id="upload-placeholder" class="text-center p-6">
+                    <p class="text-sm font-medium">Click to upload image or video</p>
+                    <p class="text-xs text-neutral-400 mt-1">Max size 50MB</p>
+                </div>
+                <img id="image-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
+                <video id="video-preview" class="absolute inset-0 w-full h-full object-cover hidden" loop muted playsinline></video>
+            </div>
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-primary w-full h-12 flex items-center justify-center gap-2">
+        <span id="btn-text">Publish Project</span>
+        <span id="btn-spinner" class="hidden animate-spin">⟳</span>
+      </button>
+
+      <p id="error-msg" class="text-red-500 text-sm text-center hidden mt-4"></p>
+    </form>
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const authLoading = document.getElementById('auth-loading');
+  const postContent = document.getElementById('post-content');
+  const errorMsg = document.getElementById('error-msg');
+  let currentUser: any = null;
+
+  // --- 1. AUTH CHECK ---
+  async function checkSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      setTimeout(() => window.location.href = '/login?message=Please log in first', 500);
+    } else {
+      currentUser = session.user;
+      authLoading?.classList.add('hidden');
+      postContent?.classList.remove('hidden');
+    }
+  }
+  checkSession();
+
+  // --- 2. UPLOAD LOGIC ---
+  const form = document.getElementById('upload-form') as HTMLFormElement;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const btnText = document.getElementById('btn-text');
+  const btnSpinner = document.getElementById('btn-spinner');
+  
+  // Preview Elements
+  const imagePreview = document.getElementById('image-preview') as HTMLImageElement;
+  const videoPreview = document.getElementById('video-preview') as HTMLVideoElement;
+  const uploadPlaceholder = document.getElementById('upload-placeholder');
+  let selectedFile: File | null = null;
+
+  fileInput.addEventListener('change', (e) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+      selectedFile = target.files[0];
+      const url = URL.createObjectURL(selectedFile);
+      uploadPlaceholder?.classList.add('hidden');
+      
+      if (selectedFile.type.startsWith('video/')) {
+        videoPreview.src = url;
+        videoPreview.classList.remove('hidden');
+        imagePreview.classList.add('hidden');
+      } else {
+        imagePreview.src = url;
+        imagePreview.classList.remove('hidden');
+        videoPreview.classList.add('hidden');
+      }
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    // Loading State
+    submitBtn.disabled = true;
+    btnText!.innerText = "Publishing...";
+    btnSpinner!.classList.remove('hidden');
+    errorMsg!.classList.add('hidden');
+
+    try {
+      if (!selectedFile) throw new Error("Please select a file to upload.");
+
+      const title = (document.getElementById('title') as HTMLInputElement).value;
+      const desc = (document.getElementById('description') as HTMLTextAreaElement).value;
+      const category = (document.getElementById('category') as HTMLSelectElement).value; // Get Category
+
+      // A. Ensure Profile
+      await supabase.from('profiles').upsert({
+          id: currentUser.id,
+          email: currentUser.email,
+          updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+      // B. Upload File
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadErr } = await supabase.storage
+        .from('projects')
+        .upload(fileName, selectedFile);
+      
+      if (uploadErr) throw uploadErr;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('projects')
+        .getPublicUrl(fileName);
+
+      // C. Insert Project (WITH CATEGORY)
+      const { error: dbErr } = await supabase.from('projects').insert({
+        title, 
+        description: desc, 
+        category: category,  // <--- Saving the category here
+        image_url: publicUrl, 
+        user_id: currentUser.id 
+      });
+
+      if (dbErr) throw dbErr;
+
+      // Success
+      window.location.href = '/explore';
+
+    } catch (err: any) {
+      console.error(err);
+      errorMsg!.innerText = err.message || "Error posting project";
+      errorMsg!.classList.remove('hidden');
+      submitBtn.disabled = false;
+      btnText!.innerText = "Publish Project";
+      btnSpinner!.classList.add('hidden');
+    }
+  });
+</script>

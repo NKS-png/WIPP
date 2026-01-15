@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimalist Reset */
+body {
+  @apply bg-white text-neutral-900 antialiased dark:bg-neutral-900 dark:text-neutral-50 overflow-x-hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1, h2, h3 {
+  @apply tracking-tight font-medium;
+}
+
+/* Custom Utilities */
+.btn-primary {
+  @apply bg-neutral-900 text-white px-6 py-2 text-sm font-medium hover:bg-neutral-700 transition-colors dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200;
+}
+
+.btn-secondary {
+  @apply border border-neutral-300 text-neutral-900 px-6 py-2 text-sm font-medium hover:bg-neutral-50 transition-colors dark:text-white dark:border-neutral-700 dark:hover:bg-neutral-800;
+}
+
+.input-field {
+  @apply w-full border border-neutral-200 p-3 text-sm focus:outline-none focus:border-neutral-900 transition-colors bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-100 dark:focus:border-neutral-400;
+}

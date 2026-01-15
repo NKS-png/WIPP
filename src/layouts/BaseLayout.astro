@@ -1,0 +1,38 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+const { title } = Astro.props;
+---
+
+<html lang="en" class="theme-loading">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} | Minimal Portfolio</title>
+    <style>
+      .theme-loading {
+        visibility: hidden;
+        opacity: 0;
+      }
+    </style>
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'dark' || (!theme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+        document.documentElement.classList.remove('theme-loading');
+      })();
+    </script>
+  </head>
+  <body class="flex flex-col min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50">
+    <Navbar />
+    <main class="flex-grow w-full max-w-6xl mx-auto px-6 py-12">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

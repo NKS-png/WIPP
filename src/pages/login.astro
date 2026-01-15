@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const url = new URL(Astro.request.url);
+const error = url.searchParams.get('error');
+const message = url.searchParams.get('message');
+---
+
+<BaseLayout title="Login">
+  <div class="max-w-md mx-auto py-20">
+    <h1 class="text-2xl font-bold mb-8 text-center animate-fade-in-up">Welcome Back</h1>
+
+    <form action="/api/auth/login" method="post" class="space-y-5" id="loginForm">
+      <div class="group">
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2 transition-colors group-focus-within:text-neutral-900 dark:group-focus-within:text-white">Email</label>
+        <input 
+          type="email" 
+          name="email" 
+          class="input-field w-full transition-all duration-200 focus:scale-[1.01]" 
+          required 
+          placeholder="name@example.com"
+        />
+      </div>
+      
+      <div class="group">
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2 transition-colors group-focus-within:text-neutral-900 dark:group-focus-within:text-white">Password</label>
+        <input 
+          type="password" 
+          name="password" 
+          class="input-field w-full transition-all duration-200 focus:scale-[1.01]" 
+          required 
+          placeholder="••••••••"
+        />
+      </div>
+
+      <div class="pt-4">
+        <button 
+          type="submit" 
+          id="submitBtn"
+          class="btn-primary w-full relative overflow-hidden transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 h-12"
+        >
+          <span id="btnText" class="font-medium">Sign In / Sign Up</span>
+          
+          <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </div>
+
+      {error && (
+        <div class="animate-shake text-sm text-center text-red-500 mt-4 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg border border-red-100 dark:border-red-900">
+          {error}
+        </div>
+      )}
+      
+      {message && (
+        <div class="animate-fade-in text-sm text-center text-neutral-500 mt-4 bg-neutral-50 dark:bg-neutral-800 py-2 rounded-lg">
+          {message}
+        </div>
+      )}
+    </form>
+  </div>
+</BaseLayout>
+
+<script>
+  // 1. Define a clean "Pop" sound (Base64 encoded to avoid external files)
+  const popSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder; replace with actual base64 below for real sound
+  
+  // Real "Click/Pop" Sound (Short UI sound)
+  const clickAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
+  clickAudio.volume = 0.5;
+
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('btnText');
+  const btnSpinner = document.getElementById('btnSpinner');
+  const inputs = document.querySelectorAll('input');
+
+  // Play subtle sound on input focus
+  inputs.forEach(input => {
+    input.addEventListener('focus', () => {
+       // Optional: Very quiet sound on focus
+       // clickAudio.currentTime = 0;
+       // clickAudio.play();
+    });
+  });
+
+  // Handle Form Submission
+  form.addEventListener('submit', (e) => {
+    // 1. Play Sound
+    const playPromise = clickAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        // Auto-play was prevented
+      });
+    }
+
+    // 2. Visual Animation State
+    btn.setAttribute('disabled', 'true'); // Prevent double clicks
+    btn.classList.add('cursor-not-allowed', 'opacity-80');
+    
+    // Hide text, show spinner
+    btnText.textContent = "Authenticating...";
+    btnSpinner.classList.remove('hidden');
+    
+    // The form will now proceed to submit to the server...
+  });
+</script>
+
+<style>
+  /* Custom Animations not in standard Tailwind */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+  
+  .animate-shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

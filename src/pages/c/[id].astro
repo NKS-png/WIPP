@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+const { id } = Astro.params;
+
+// 1. Fetch Community Details
+const { data: community, error } = await supabase
+  .from('communities')
+  .select('*, members:community_members(count)')
+  .eq('id', id)
+  .single();
+
+if (!community) return Astro.redirect('/404');
+
+// 2. Fetch Posts
+const { data: posts } = await supabase
+  .from('community_posts')
+  .select('*, profiles(username, avatar_url)')
+  .eq('community_id', id)
+  .order('created_at', { ascending: false });
+
+---
+
+<BaseLayout title={community.name}>
+  
+  <div class="bg-neutral-100 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
+    <div class="max-w-4xl mx-auto px-6 py-12 text-center">
+      <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{community.name}</h1>
+      <p class="text-neutral-500 mb-6 max-w-lg mx-auto">{community.description}</p>
+      
+      <div class="flex items-center justify-center gap-4">
+        <span class="text-sm font-medium text-neutral-400">{community.members?.[0]?.count || 0} Members</span>
+        <button id="join-btn" class="hidden px-6 py-2 rounded-full text-sm font-bold transition-all border border-neutral-300 dark:border-neutral-600">
+           Loading...
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-6 py-8">
+    
+    <div id="post-box" class="hidden mb-10 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+      <textarea id="post-content" class="w-full bg-transparent resize-none outline-none text-neutral-900 dark:text-white placeholder-neutral-400" rows="2" placeholder="Post something to the community..."></textarea>
+      <div class="flex justify-between items-center mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+        <button class="text-neutral-400 hover:text-neutral-900 dark:hover:text-white text-xs font-bold uppercase">
+            + Add Image
+        </button>
+        <button id="submit-post" class="btn-primary px-4 py-1.5 rounded-full text-sm">Post</button>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      {posts && posts.map((post) => (
+        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-3">
+             <div class="w-8 h-8 rounded-full bg-neutral-100 overflow-hidden">
+                {post.profiles?.avatar_url && <img src={post.profiles.avatar_url} class="w-full h-full object-cover" />}
+             </div>
+             <div>
+                <p class="text-sm font-bold text-neutral-900 dark:text-white">@{post.profiles?.username}</p>
+                <p class="text-xs text-neutral-400">{new Date(post.created_at).toLocaleDateString()}</p>
+             </div>
+          </div>
+          <p class="text-neutral-800 dark:text-neutral-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+        </div>
+      ))}
+
+      {posts?.length === 0 && (
+        <div class="text-center py-10 text-neutral-500">
+            No posts yet. Be the first!
+        </div>
+      )}
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script define:vars={{ communityId: community.id }}>
+  import { supabase } from '../../lib/supabase';
+
+  const joinBtn = document.getElementById('join-btn');
+  const postBox = document.getElementById('post-box');
+  const submitPostBtn = document.getElementById('submit-post');
+  const postContent = document.getElementById('post-content');
+
+  let currentUser = null;
+  let isMember = false;
+
+  async function init() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    currentUser = sessionData?.session?.user;
+
+    if (!currentUser) {
+        joinBtn.innerText = "Login to Join";
+        joinBtn.classList.remove('hidden');
+        joinBtn.onclick = () => window.location.href = '/login';
+        return;
+    }
+
+    // Check Membership
+    const { data: member } = await supabase
+        .from('community_members')
+        .select('id')
+        .eq('community_id', communityId)
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+    isMember = !!member;
+    updateUI();
+  }
+
+  function updateUI() {
+    joinBtn.classList.remove('hidden');
+    if (isMember) {
+        joinBtn.innerText = "Joined ✓";
+        joinBtn.classList.add('bg-neutral-100', 'dark:bg-neutral-800', 'text-neutral-500');
+        joinBtn.onclick = leaveCommunity;
+        postBox.classList.remove('hidden'); // Show post form
+    } else {
+        joinBtn.innerText = "Join Community";
+        joinBtn.classList.add('btn-primary', 'text-white');
+        joinBtn.classList.remove('bg-neutral-100', 'dark:bg-neutral-800', 'text-neutral-500');
+        joinBtn.onclick = joinCommunity;
+        postBox.classList.add('hidden'); // Hide post form
+    }
+  }
+
+  async function joinCommunity() {
+    await supabase.from('community_members').insert({ community_id: communityId, user_id: currentUser.id });
+    isMember = true;
+    updateUI();
+    window.location.reload(); // Reload to update member count
+  }
+
+  async function leaveCommunity() {
+    if(!confirm('Are you sure you want to leave?')) return;
+    await supabase.from('community_members').delete().eq('community_id', communityId).eq('user_id', currentUser.id);
+    isMember = false;
+    updateUI();
+    window.location.reload();
+  }
+
+  // Handle Posting
+  submitPostBtn.addEventListener('click', async () => {
+    const content = postContent.value;
+    if(!content.trim()) return;
+
+    submitPostBtn.disabled = true;
+    submitPostBtn.innerText = "Posting...";
+
+    const { error } = await supabase.from('community_posts').insert({
+        community_id: communityId,
+        user_id: currentUser.id,
+        content: content
+    });
+
+    if (error) {
+        alert('Error posting');
+        console.error(error);
+    } else {
+        window.location.reload();
+    }
+  });
+
+  init();
+</script>

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Create Community">
+  <div class="max-w-md mx-auto py-12">
+    <h1 class="text-2xl font-bold mb-6 text-neutral-900 dark:text-white">Create a Community</h1>
+    
+    <form id="create-community-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Name</label>
+        <input type="text" id="name" class="input-field w-full" placeholder="e.g. Astro Developers" required />
+      </div>
+      
+      <div>
+        <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Description</label>
+        <textarea id="description" class="input-field w-full" rows="3" placeholder="What is this group about?"></textarea>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-primary w-full py-3 rounded-full">Create Community</button>
+      <p id="error-msg" class="text-red-500 text-sm hidden text-center"></p>
+    </form>
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  
+  const form = document.getElementById('create-community-form');
+  const errorMsg = document.getElementById('error-msg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const desc = document.getElementById('description').value;
+    
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+
+    if (!user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // 1. Create Community
+    const { data: community, error } = await supabase
+      .from('communities')
+      .insert({ name, description: desc, creator_id: user.id })
+      .select()
+      .single();
+
+    if (error) {
+        errorMsg.innerText = error.message;
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
+    // 2. Auto-join the creator as admin
+    await supabase.from('community_members').insert({
+        community_id: community.id,
+        user_id: user.id,
+        role: 'admin'
+    });
+
+    window.location.href = `/c/${community.id}`;
+  });
+</script>

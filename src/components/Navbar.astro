@@ -6,9 +6,9 @@ const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token")?.value;
 const refreshToken = cookies.get("sb-refresh-token")?.value;
 
-let session: any = null;
-let user: any = null;
-let profile: any = null;
+let session = null;
+let user = null;
+let profile = null;
 
 if (accessToken && refreshToken) {
   const { data, error } = await supabase.auth.setSession({
@@ -36,13 +36,13 @@ const displayName = profile?.username || profile?.full_name || user?.email?.spli
 const displayInitial = displayName.charAt(0).toUpperCase();
 ---
 
-<nav class="w-full border-b border-neutral-100 dark:border-neutral-900 bg-white/90 dark:bg-black/90 backdrop-blur-xl sticky top-0 z-50 transition-colors duration-300">
-  <div class="max-w-7xl mx-auto px-6 h-24 flex justify-between items-center gap-4">
+<nav class="w-full border-b border-neutral-100 dark:border-neutral-900 bg-white/80 dark:bg-black/80 backdrop-blur-xl sticky top-0 z-40 transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
     
     <div class="flex items-center gap-8">
-      <a href="/" class="flex items-center gap-2 group">
-        <img src="/logo.png" alt="Logo" class="h-16 w-auto dark:hidden group-hover:scale-105 transition-transform object-contain" />
-        <img src="/darklogo.png" alt="Logo" class="h-16 w-auto hidden dark:block group-hover:scale-105 transition-transform object-contain" />
+      <a href="/" class="flex items-center gap-2 group relative z-[60]">
+        <img src="/logo.png" alt="Logo" class="h-10 w-auto dark:hidden group-hover:scale-105 transition-transform object-contain" />
+        <img src="/darklogo.png" alt="Logo" class="h-10 w-auto hidden dark:block group-hover:scale-105 transition-transform object-contain" />
       </a>
       
       <div class="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-400">
@@ -53,7 +53,7 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       </div>
     </div>
 
-    <div class="flex-1 max-w-md hidden sm:block">
+    <div class="flex-1 max-w-md hidden md:block">
       <div class="relative group">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-4 w-4 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,133 +62,139 @@ const displayInitial = displayName.charAt(0).toUpperCase();
         </div>
         <input 
             type="text" 
-            placeholder="Search projects, services..." 
+            placeholder="Search..." 
             class="block w-full pl-10 pr-3 py-2 border border-neutral-200 dark:border-neutral-800 rounded-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-black focus:ring-1 focus:ring-neutral-900 dark:focus:ring-neutral-700 sm:text-sm transition-all" 
         />
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
       <ThemeToggle />
 
-      <!-- Mobile Menu Button -->
-      <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white relative z-50">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      {session ? (
-        <div class="flex items-center gap-4">
-          <a href="/post" class="hidden md:block bg-neutral-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-            Post Work
-          </a>
-          
-          <div class="relative group">
-            <button class="flex items-center focus:outline-none pb-2 pt-2">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" class="h-10 w-10 rounded-full object-cover border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800" />
-              ) : (
-                <div class="h-10 w-10 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black flex items-center justify-center text-sm font-bold shadow-md">
-                  {displayInitial}
-                </div>
-              )}
-            </button>
+      <div class="hidden md:flex items-center gap-4">
+        {session ? (
+          <>
+            <a href="/post" class="bg-neutral-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
+              Post Work
+            </a>
             
-            <div class="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform group-hover:translate-y-0 translate-y-2 z-50">
-              <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden ring-1 ring-black ring-opacity-5">
-                
-                <div class="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
-                  <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Signed in as</p>
-                  <p class="text-sm font-bold text-neutral-900 dark:text-white truncate">{displayName}</p>
+            <div class="relative group">
+              <button class="flex items-center focus:outline-none">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" class="h-9 w-9 rounded-full object-cover border border-neutral-200 dark:border-neutral-800" />
+                ) : (
+                  <div class="h-9 w-9 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black flex items-center justify-center text-sm font-bold">
+                    {displayInitial}
+                  </div>
+                )}
+              </button>
+              
+              <div class="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-2 group-hover:translate-y-0 z-50">
+                <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+                  <div class="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+                    <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Signed in as</p>
+                    <p class="text-sm font-bold text-neutral-900 dark:text-white truncate">{displayName}</p>
+                  </div>
+                  <div class="py-1">
+                    <a href={`/profile/${user.id}`} class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Your Profile</a>
+                    <a href="/settings" class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Settings</a>
+                    <a href="/communities" class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Communities</a>
+                  </div>
+                  <div class="border-t border-neutral-100 dark:border-neutral-800 py-1">
+                    <form action="/api/auth/signout" method="post">
+                       <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10">Sign out</button>
+                    </form>
+                  </div>
                 </div>
-                
-                <div class="py-1">
-                  <a href={`/profile/${user.id}`} class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-black dark:hover:text-white transition-colors">
-                    Your Profile
-                  </a>
-                  <a href="/settings" class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-black dark:hover:text-white transition-colors">
-                    Settings
-                  </a>
-                  <a href="/communities" class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-black dark:hover:text-white transition-colors">
-                    Your Communities
-                  </a>
-                </div>
-
-                <div class="border-t border-neutral-100 dark:border-neutral-800 py-1">
-                  <form action="/api/auth/signout" method="post">
-                     <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors">
-                       Sign out
-                     </button>
-                  </form>
-                </div>
-
               </div>
             </div>
-          </div>
-
-        </div>
-      ) : (
-        <div class="flex items-center gap-4">
-          <a href="/login" class="text-sm font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors">Log In</a>
-          <a href="/signup" class="text-sm font-bold bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2 rounded-full hover:opacity-90 transition-opacity shadow-lg">
-            Sign Up
-          </a>
-        </div>
-      )}
-    </div>
-  </div>
-
-  <!-- Mobile Menu -->
-  <div id="mobile-menu" class="fixed inset-0 z-40 md:hidden transform translate-x-full transition-transform duration-300 ease-in-out bg-white dark:bg-neutral-900">
-    <div class="flex flex-col h-full pt-24 px-6">
-      <div class="flex justify-end mb-8">
-        <button id="close-mobile-menu" class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="flex flex-col space-y-6">
-        <a href="/explore" class="text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Explore</a>
-        <a href="/about" class="text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">About</a>
-        <a href="/services" class="text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Services</a>
-        <a href="/communities" class="text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Communities</a>
-
-        {session ? (
-          <div class="border-t border-neutral-200 dark:border-neutral-700 pt-6 space-y-4">
-            <a href={`/profile/${user.id}`} class="block text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Your Profile</a>
-            <a href="/settings" class="block text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Settings</a>
-            <a href="/communities" class="block text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Your Communities</a>
-            <a href="/post" class="block text-lg font-medium bg-neutral-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-full text-center hover:opacity-90 transition-opacity">Post Work</a>
-            <form action="/api/auth/signout" method="post" class="mt-4">
-              <button type="submit" class="w-full text-left text-lg font-medium text-red-600 hover:text-red-700 transition-colors">Sign out</button>
-            </form>
-          </div>
+          </>
         ) : (
-          <div class="border-t border-neutral-200 dark:border-neutral-700 pt-6 space-y-4">
-            <a href="/login" class="block text-lg font-medium text-neutral-900 dark:text-white hover:text-blue-600 transition-colors">Log In</a>
-            <a href="/signup" class="block text-lg font-medium bg-neutral-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-full text-center hover:opacity-90 transition-opacity">Sign Up</a>
-          </div>
+          <>
+            <a href="/login" class="text-sm font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">Log In</a>
+            <a href="/signup" class="text-sm font-bold bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2 rounded-full hover:opacity-90 transition-opacity">Sign Up</a>
+          </>
         )}
       </div>
     </div>
   </div>
 </nav>
 
+<div id="mobile-menu" class="fixed inset-0 z-[9999] md:hidden bg-white dark:bg-black transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col" data-state="closed">
+  
+  <div class="h-24 px-6 flex items-center justify-between">
+      <span class="text-lg font-bold tracking-tight text-neutral-400 uppercase">Menu</span>
+      <button id="close-mobile-menu" class="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white hover:scale-105 transition-transform">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col">
+    <nav class="flex flex-col gap-6">
+      <a href="/explore" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Explore</a>
+      <a href="/about" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">About</a>
+      <a href="/services" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Services</a>
+      <a href="/communities" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Community</a>
+    </nav>
+
+    <div class="mt-auto pt-8 pb-8">
+      <hr class="border-neutral-200 dark:border-neutral-800 mb-8" />
+      
+      {session ? (
+        <div class="flex flex-col gap-6">
+          <div class="flex items-center gap-4">
+            <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} class="w-14 h-14 rounded-full bg-neutral-200 border border-neutral-200 dark:border-neutral-800" />
+            <div>
+              <p class="font-bold text-xl text-neutral-900 dark:text-white">{displayName}</p>
+              <a href={`/profile/${user.id}`} class="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white">View Profile &rarr;</a>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+              <a href="/settings" class="text-center py-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 font-bold text-neutral-900 dark:text-white">Settings</a>
+              <form action="/api/auth/signout" method="post" class="w-full">
+                <button type="submit" class="w-full h-full text-center py-4 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-600 font-bold">Sign Out</button>
+              </form>
+          </div>
+
+          <a href="/post" class="w-full text-center py-5 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xl rounded-2xl shadow-xl hover:scale-[1.02] transition-transform">
+            Post New Work
+          </a>
+        </div>
+      ) : (
+        <div class="flex flex-col gap-4">
+          <a href="/login" class="w-full text-center py-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 font-bold text-neutral-900 dark:text-white text-xl">Log In</a>
+          <a href="/signup" class="w-full text-center py-5 rounded-2xl bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xl shadow-xl">Sign Up Free</a>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Menu Animation State */
+  #mobile-menu[data-state="open"] {
+    transform: translateX(0);
+  }
+</style>
+
 <script>
   import { supabase } from '../lib/supabase';
   const isDev = window.location.hostname === 'localhost';
 
-  // Function to get cookie value
+  // --- AUTH SYNC ---
   function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
   }
 
-  // Initialize session from cookies on page load
   const accessToken = getCookie('sb-access-token');
   const refreshToken = getCookie('sb-refresh-token');
   if (accessToken && refreshToken) {
@@ -200,10 +206,7 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       const cookieOptions = isDev ? 'path=/; max-age=31536000; SameSite=Lax' : 'path=/; max-age=31536000; SameSite=Lax; Secure';
       document.cookie = `sb-access-token=${session.access_token}; ${cookieOptions}`;
       document.cookie = `sb-refresh-token=${session.refresh_token}; ${cookieOptions}`;
-
-      if (!document.cookie.includes('sb-access-token')) {
-          window.location.reload();
-      }
+      if (!document.cookie.includes('sb-access-token')) window.location.reload();
     } else if (event === 'SIGNED_OUT') {
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -211,29 +214,31 @@ const displayInitial = displayName.charAt(0).toUpperCase();
     }
   });
 
-  // Mobile Menu Toggle
+  // --- MOBILE MENU LOGIC ---
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const closeMobileMenuBtn = document.getElementById('close-mobile-menu');
   const mobileMenu = document.getElementById('mobile-menu');
+  const body = document.body;
 
-  if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.remove('translate-x-full');
-    });
+  function openMenu() {
+    if (mobileMenu) {
+      mobileMenu.setAttribute('data-state', 'open');
+      body.style.overflow = 'hidden'; // Lock scroll
+    }
   }
 
-  if (closeMobileMenuBtn && mobileMenu) {
-    closeMobileMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.add('translate-x-full');
-    });
+  function closeMenu() {
+    if (mobileMenu) {
+      mobileMenu.setAttribute('data-state', 'closed');
+      body.style.overflow = ''; // Unlock scroll
+    }
   }
 
-  // Close menu when clicking outside
-  if (mobileMenu) {
-    mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) {
-        mobileMenu.classList.add('translate-x-full');
-      }
-    });
-  }
+  mobileMenuBtn?.addEventListener('click', openMenu);
+  closeMobileMenuBtn?.addEventListener('click', closeMenu);
+
+  const links = mobileMenu?.querySelectorAll('a');
+  links?.forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
 </script>

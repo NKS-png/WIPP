@@ -4,164 +4,360 @@ import { supabase } from '../../lib/supabase';
 
 const { id } = Astro.params;
 
-// 1. Fetch Community Details
+// 1. Get Current User Session
+const { data: sessionData } = await supabase.auth.getSession();
+const currentUser = sessionData?.session?.user;
+
+// 2. Fetch Community Details (Check for 404)
 const { data: community, error } = await supabase
   .from('communities')
-  .select('*, members:community_members(count)')
+  .select('*')
   .eq('id', id)
-  .single();
+  .maybeSingle();
 
 if (!community) return Astro.redirect('/404');
 
-// 2. Fetch Posts
+// 3. Check Membership & Admin Status
+let isMember = false;
+let isAdmin = false;
+
+if (currentUser) {
+  // Check if user is the Admin (Owner)
+  isAdmin = community.admin_id === currentUser.id;
+
+  // Check if user is a Member
+  const { data: membership } = await supabase
+    .from('community_members')
+    .select('role')
+    .eq('community_id', id)
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  
+  if (membership) {
+    isMember = true;
+  }
+}
+
+// 4. Fetch Posts (Feed)
 const { data: posts } = await supabase
-  .from('community_posts')
-  .select('*, profiles(username, avatar_url)')
+  .from('posts')
+  .select(`
+    *,
+    profiles (username, full_name, avatar_url)
+  `)
   .eq('community_id', id)
   .order('created_at', { ascending: false });
+
+// 5. Fetch Member Count
+const { count: memberCount } = await supabase
+  .from('community_members')
+  .select('*', { count: 'exact', head: true })
+  .eq('community_id', id);
 
 ---
 
 <BaseLayout title={community.name}>
   
-  <div class="bg-neutral-100 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
-    <div class="max-w-4xl mx-auto px-6 py-12 text-center">
-      <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{community.name}</h1>
-      <p class="text-neutral-500 mb-6 max-w-lg mx-auto">{community.description}</p>
-      
-      <div class="flex items-center justify-center gap-4">
-        <span class="text-sm font-medium text-neutral-400">{community.members?.[0]?.count || 0} Members</span>
-        <button id="join-btn" class="hidden px-6 py-2 rounded-full text-sm font-bold transition-all border border-neutral-300 dark:border-neutral-600">
-           Loading...
-        </button>
-      </div>
-    </div>
+  <div class="relative h-72 w-full bg-neutral-100 dark:bg-neutral-800 group overflow-hidden">
+    {community.banner_url ? (
+      <img src={community.banner_url} class="w-full h-full object-cover" />
+    ) : (
+      <div class="w-full h-full bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900"></div>
+    )}
+    
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+    {isAdmin && (
+      <button id="edit-community-btn" class="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md px-5 py-2.5 rounded-full text-xs font-bold border border-white/20 transition-all flex items-center gap-2">
+        <span>⚙️ Edit Community</span>
+      </button>
+    )}
   </div>
 
-  <div class="max-w-2xl mx-auto px-6 py-8">
-    
-    <div id="post-box" class="hidden mb-10 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-      <textarea id="post-content" class="w-full bg-transparent resize-none outline-none text-neutral-900 dark:text-white placeholder-neutral-400" rows="2" placeholder="Post something to the community..."></textarea>
-      <div class="flex justify-between items-center mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-        <button class="text-neutral-400 hover:text-neutral-900 dark:hover:text-white text-xs font-bold uppercase">
-            + Add Image
-        </button>
-        <button id="submit-post" class="btn-primary px-4 py-1.5 rounded-full text-sm">Post</button>
+  <div class="max-w-6xl mx-auto px-6 mb-20">
+    <div class="flex flex-col md:flex-row items-start gap-8 -mt-20 relative z-10">
+      
+      <div class="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-white dark:bg-neutral-900 border-4 border-white dark:border-black shadow-2xl overflow-hidden flex items-center justify-center shrink-0">
+        {community.image_url ? (
+          <img src={community.image_url} class="w-full h-full object-cover" />
+        ) : (
+          <span class="text-5xl">🌍</span>
+        )}
+      </div>
+
+      <div class="flex-1 pt-2 md:pt-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 w-full">
+        <div>
+          <h1 class="text-4xl font-extrabold text-neutral-900 dark:text-white mb-2 tracking-tight">{community.name}</h1>
+          <div class="flex items-center gap-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+             <span class="flex items-center gap-1">👥 {memberCount || 0} Members</span>
+             <span class="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+             <span>Est. {new Date(community.created_at).getFullYear()}</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 w-full md:w-auto">
+          {currentUser ? (
+            isMember ? (
+              <button id="leave-btn" class="flex-1 md:flex-none px-8 py-3 border-2 border-neutral-200 dark:border-neutral-800 rounded-2xl font-bold text-neutral-600 dark:text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/10 dark:hover:border-red-900/30 transition-all">
+                Joined ✓
+              </button>
+            ) : (
+              <button id="join-btn" class="flex-1 md:flex-none px-10 py-3 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-2xl font-bold hover:scale-105 transition-transform shadow-xl">
+                Join Community
+              </button>
+            )
+          ) : (
+            <a href="/login" class="flex-1 md:flex-none px-10 py-3 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-2xl font-bold text-center">
+              Log in to Join
+            </a>
+          )}
+        </div>
       </div>
     </div>
 
-    <div class="space-y-6">
-      {posts && posts.map((post) => (
-        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl">
-          <div class="flex items-center gap-3 mb-3">
-             <div class="w-8 h-8 rounded-full bg-neutral-100 overflow-hidden">
-                {post.profiles?.avatar_url && <img src={post.profiles.avatar_url} class="w-full h-full object-cover" />}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-16">
+      
+      <div class="lg:col-span-2 space-y-8">
+        
+        {isMember ? (
+          <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-3xl shadow-sm">
+            <form id="create-post-form">
+              <div class="flex gap-4">
+                <div class="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 overflow-hidden border border-neutral-100 dark:border-neutral-700">
+                   <img src={currentUser?.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.email}`} class="w-full h-full object-cover" />
+                </div>
+                <div class="flex-1">
+                  <textarea 
+                    id="post-content" 
+                    rows="2" 
+                    class="w-full bg-transparent border-none focus:ring-0 text-lg placeholder-neutral-400 dark:text-white resize-none p-2" 
+                    placeholder="Start a discussion..."
+                    required
+                  ></textarea>
+                  <div class="flex justify-between items-center pt-3 border-t border-neutral-100 dark:border-neutral-800 mt-2">
+                    <button type="button" class="text-neutral-400 hover:text-neutral-900 dark:hover:text-white text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                      <span>📷</span> Add Image
+                    </button>
+                    <button type="submit" class="bg-neutral-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+                      Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div class="p-10 text-center bg-neutral-50 dark:bg-neutral-900 rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800">
+            <h3 class="font-bold text-neutral-900 dark:text-white text-lg">Members Only</h3>
+            <p class="text-neutral-500">Join this community to share your thoughts and work.</p>
+          </div>
+        )}
+
+        <div class="space-y-6">
+          {posts && posts.length > 0 ? (
+            posts.map(post => (
+              <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-3xl shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors group">
+                <div class="flex items-center gap-4 mb-4">
+                  <a href={`/profile/${post.user_id}`} class="w-12 h-12 rounded-full bg-neutral-200 overflow-hidden border border-neutral-100 dark:border-neutral-800">
+                    <img src={post.profiles?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${post.profiles?.username}`} class="w-full h-full object-cover" />
+                  </a>
+                  <div>
+                    <a href={`/profile/${post.user_id}`} class="font-bold text-neutral-900 dark:text-white hover:underline block">{post.profiles?.full_name || post.profiles?.username}</a>
+                    <p class="text-xs text-neutral-400 font-medium">{new Date(post.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <p class="text-neutral-800 dark:text-neutral-200 text-lg leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                
+                {/* Post Footer (Likes/Comments - Placeholder) */}
+                <div class="flex gap-6 mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-800">
+                    <button class="flex items-center gap-2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors text-sm font-bold">
+                        ❤️ Like
+                    </button>
+                    <button class="flex items-center gap-2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors text-sm font-bold">
+                        💬 Comment
+                    </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="text-center py-24 bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-100 dark:border-neutral-800">
+              <span class="text-4xl block mb-4">📭</span>
+              <p class="text-neutral-500 font-medium">No discussions yet. Be the first!</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-3xl sticky top-24">
+          <h3 class="font-bold text-xs uppercase text-neutral-400 mb-4 tracking-widest">About</h3>
+          <p class="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-8">
+            {community.description || "No description provided."}
+          </p>
+          
+          <div class="h-px bg-neutral-100 dark:bg-neutral-800 my-6"></div>
+          
+          <div class="space-y-4">
+             <div class="flex items-center gap-3 text-sm">
+                <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">⚡</div>
+                <span class="text-neutral-600 dark:text-neutral-400">Very Active Community</span>
              </div>
-             <div>
-                <p class="text-sm font-bold text-neutral-900 dark:text-white">@{post.profiles?.username}</p>
-                <p class="text-xs text-neutral-400">{new Date(post.created_at).toLocaleDateString()}</p>
+             <div class="flex items-center gap-3 text-sm">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">🛡️</div>
+                <span class="text-neutral-600 dark:text-neutral-400">Moderated Safe Space</span>
              </div>
           </div>
-          <p class="text-neutral-800 dark:text-neutral-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
         </div>
-      ))}
+      </div>
 
-      {posts?.length === 0 && (
-        <div class="text-center py-10 text-neutral-500">
-            No posts yet. Be the first!
-        </div>
-      )}
     </div>
-
   </div>
+
+  {isAdmin && (
+    <div id="edit-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[100] px-4 backdrop-blur-sm">
+      <div class="bg-white dark:bg-neutral-900 p-8 rounded-3xl w-full max-w-lg shadow-2xl animate-fade-up">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-2xl font-bold dark:text-white">Edit Community</h2>
+          <button id="close-edit-modal" class="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white transition-colors">&times;</button>
+        </div>
+        <form id="edit-community-form" class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Name</label>
+            <input type="text" id="edit-name" value={community.name} class="w-full px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Description</label>
+            <textarea id="edit-desc" rows="3" class="w-full px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none">{community.description}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Icon URL</label>
+            <input type="text" id="edit-icon" value={community.image_url || ''} class="w-full px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none" placeholder="https://..." />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Banner URL</label>
+            <input type="text" id="edit-banner" value={community.banner_url || ''} class="w-full px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none" placeholder="https://..." />
+          </div>
+          <button type="submit" class="w-full py-4 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:scale-[1.02] transition-transform">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  )}
+
 </BaseLayout>
 
-<script define:vars={{ communityId: community.id }}>
+<script define:vars={{ communityId: id }}>
   import { supabase } from '../../lib/supabase';
 
+  // --- JOIN / LEAVE LOGIC ---
   const joinBtn = document.getElementById('join-btn');
-  const postBox = document.getElementById('post-box');
-  const submitPostBtn = document.getElementById('submit-post');
-  const postContent = document.getElementById('post-content');
+  const leaveBtn = document.getElementById('leave-btn');
 
-  let currentUser = null;
-  let isMember = false;
+  if (joinBtn) {
+    joinBtn.addEventListener('click', async () => {
+      // 1. Check Auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return window.location.href = '/login';
 
-  async function init() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    currentUser = sessionData?.session?.user;
-
-    if (!currentUser) {
-        joinBtn.innerText = "Login to Join";
-        joinBtn.classList.remove('hidden');
-        joinBtn.onclick = () => window.location.href = '/login';
-        return;
-    }
-
-    // Check Membership
-    const { data: member } = await supabase
-        .from('community_members')
-        .select('id')
-        .eq('community_id', communityId)
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-
-    isMember = !!member;
-    updateUI();
-  }
-
-  function updateUI() {
-    joinBtn.classList.remove('hidden');
-    if (isMember) {
-        joinBtn.innerText = "Joined ✓";
-        joinBtn.classList.add('bg-neutral-100', 'dark:bg-neutral-800', 'text-neutral-500');
-        joinBtn.onclick = leaveCommunity;
-        postBox.classList.remove('hidden'); // Show post form
-    } else {
-        joinBtn.innerText = "Join Community";
-        joinBtn.classList.add('btn-primary', 'text-white');
-        joinBtn.classList.remove('bg-neutral-100', 'dark:bg-neutral-800', 'text-neutral-500');
-        joinBtn.onclick = joinCommunity;
-        postBox.classList.add('hidden'); // Hide post form
-    }
-  }
-
-  async function joinCommunity() {
-    await supabase.from('community_members').insert({ community_id: communityId, user_id: currentUser.id });
-    isMember = true;
-    updateUI();
-    window.location.reload(); // Reload to update member count
-  }
-
-  async function leaveCommunity() {
-    if(!confirm('Are you sure you want to leave?')) return;
-    await supabase.from('community_members').delete().eq('community_id', communityId).eq('user_id', currentUser.id);
-    isMember = false;
-    updateUI();
-    window.location.reload();
-  }
-
-  // Handle Posting
-  submitPostBtn.addEventListener('click', async () => {
-    const content = postContent.value;
-    if(!content.trim()) return;
-
-    submitPostBtn.disabled = true;
-    submitPostBtn.innerText = "Posting...";
-
-    const { error } = await supabase.from('community_posts').insert({
+      // 2. Join
+      const { error } = await supabase.from('community_members').insert({
         community_id: communityId,
-        user_id: currentUser.id,
-        content: content
+        user_id: session.user.id
+      });
+
+      if (error) alert(error.message);
+      else window.location.reload();
+    });
+  }
+
+  if (leaveBtn) {
+    leaveBtn.addEventListener('click', async () => {
+      // 1. Confirm
+      if(!confirm('Are you sure you want to leave this community?')) return;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // 2. Leave
+      const { error } = await supabase.from('community_members')
+        .delete()
+        .eq('community_id', communityId)
+        .eq('user_id:eq', session.user.id); // Syntax quirk: ensure precise match
+
+      // Note: If simple delete fails, Supabase sometimes needs explicit filter
+      if (error) {
+         // Fallback try
+         const { error: err2 } = await supabase.from('community_members')
+            .delete()
+            .match({ community_id: communityId, user_id: session.user.id });
+         
+         if(err2) alert(err2.message);
+         else window.location.reload();
+      } else {
+         window.location.reload();
+      }
+    });
+  }
+
+  // --- POST LOGIC ---
+  const postForm = document.getElementById('create-post-form');
+  if (postForm) {
+    postForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = document.getElementById('post-content').value;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!content.trim()) return;
+
+      const { error } = await supabase.from('posts').insert({
+        content,
+        community_id: communityId,
+        user_id: session.user.id
+      });
+
+      if (error) alert(error.message);
+      else window.location.reload();
+    });
+  }
+
+  // --- EDIT MODAL LOGIC ---
+  const editBtn = document.getElementById('edit-community-btn');
+  const modal = document.getElementById('edit-modal');
+  const closeEdit = document.getElementById('close-edit-modal');
+  const editForm = document.getElementById('edit-community-form');
+
+  if (editBtn && modal) {
+    editBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+    closeEdit.addEventListener('click', () => modal.classList.add('hidden'));
+    
+    // Close on click outside
+    modal.addEventListener('click', (e) => {
+        if(e.target === modal) modal.classList.add('hidden');
     });
 
-    if (error) {
-        alert('Error posting');
-        console.error(error);
-    } else {
-        window.location.reload();
-    }
-  });
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('edit-name').value;
+      const description = document.getElementById('edit-desc').value;
+      const image_url = document.getElementById('edit-icon').value;
+      const banner_url = document.getElementById('edit-banner').value;
 
-  init();
+      const { error } = await supabase
+        .from('communities')
+        .update({ name, description, image_url, banner_url })
+        .eq('id', communityId);
+
+      if (error) alert(error.message);
+      else window.location.reload();
+    });
+  }
 </script>
+
+<style>
+  .animate-fade-up {
+    animation: fadeUp 0.3s ease-out forwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

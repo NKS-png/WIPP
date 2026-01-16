@@ -118,3 +118,59 @@ create policy "Auth Avatar Deletes" on storage.objects for delete using ( bucket
 -- Dummy data
 INSERT INTO services (title, description, price, delivery_days, user_id) VALUES ('Web Development', 'Build modern web applications', 100.00, 7, '66e79b59-d55d-4541-8e51-6aaee5b8720a');
 INSERT INTO discussions (content, user_id, profile_id) VALUES ('Great profile! Looking forward to your projects.', '66e79b59-d55d-4541-8e51-6aaee5b8720a', '66e79b59-d55d-4541-8e51-6aaee5b8720a');
+
+-- 15. Create Communities Table
+create table public.communities (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  name text not null,
+  description text,
+  creator_id uuid references public.profiles(id) not null,
+  image_url text
+);
+
+-- 16. Create Community Members Table
+create table public.community_members (
+  id uuid default gen_random_uuid() primary key,
+  community_id uuid references public.communities(id) not null,
+  user_id uuid references public.profiles(id) not null,
+  role text default 'member',
+  joined_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(community_id, user_id)
+);
+
+-- 17. Enable RLS for communities
+alter table public.communities enable row level security;
+alter table public.community_members enable row level security;
+
+-- 18. Policies for communities
+create policy "Public communities" on public.communities for select using (true);
+create policy "Users insert communities" on public.communities for insert with check (auth.uid() = creator_id);
+create policy "Creators update communities" on public.communities for update using (auth.uid() = creator_id);
+create policy "Creators delete communities" on public.communities for delete using (auth.uid() = creator_id);
+
+-- 19. Policies for community_members
+create policy "Public community_members" on public.community_members for select using (true);
+create policy "Users insert community_members" on public.community_members for insert with check (auth.uid() = user_id);
+create policy "Users delete community_members" on public.community_members for delete using (auth.uid() = user_id);
+-- Admins can update roles, but for simplicity, allow users to update their own
+create policy "Users update community_members" on public.community_members for update using (auth.uid() = user_id);
+
+-- 20. Create Community Posts Table
+create table public.community_posts (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  community_id uuid references public.communities(id) not null,
+  user_id uuid references public.profiles(id) not null,
+  content text not null,
+  image_url text
+);
+
+-- 21. Enable RLS for community_posts
+alter table public.community_posts enable row level security;
+
+-- 22. Policies for community_posts
+create policy "Public community_posts" on public.community_posts for select using (true);
+create policy "Users insert community_posts" on public.community_posts for insert with check (auth.uid() = user_id);
+create policy "Users update community_posts" on public.community_posts for update using (auth.uid() = user_id);
+create policy "Users delete community_posts" on public.community_posts for delete using (auth.uid() = user_id);

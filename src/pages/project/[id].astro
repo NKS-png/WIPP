@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProjectCard from '../../components/ProjectCard.astro';
 import { supabase } from '../../lib/supabase';
 
 const { id } = Astro.params;
@@ -8,14 +7,11 @@ const { id } = Astro.params;
 // 1. Fetch Project
 const { data: project } = await supabase
   .from('projects')
-  .select(`
-    *,
-    profiles (username, avatar_url, full_name)
-  `)
+  .select(`*, profiles (username, avatar_url, full_name)`)
   .eq('id', id)
   .maybeSingle();
 
-let profile, projects, services, comments, displayName, isOwner, currentUser;
+let profile, comments, displayName, isOwner, currentUser;
 
 if (project) {
   // 2. Auth & Ownership Check
@@ -25,18 +21,16 @@ if (project) {
 
   // 3. Fetch Profile
   profile = project.profiles;
+  displayName = profile.full_name || profile.username || "Unknown";
 
   // 4. Fetch Comments
-  const { data: comments } = await supabase
+  const { data: commentsData } = await supabase
     .from('comments')
-    .select(`
-      *,
-      profiles (username, avatar_url, full_name)
-    `)
+    .select(`*, profiles (username, avatar_url, full_name)`)
     .eq('project_id', id)
     .order('created_at', { ascending: false });
-
-  displayName = profile.full_name || profile.username || "Unknown";
+    
+  comments = commentsData;
 }
 ---
 
@@ -44,39 +38,44 @@ if (project) {
 
   {project ? (
   <div class="max-w-4xl mx-auto px-6 py-10">
-    <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-lg">
-      <div class="aspect-[16/9] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+    
+    <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm mb-8">
+      <div class="aspect-video w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-800">
         {project.image_url ? (
           <img src={project.image_url} alt={project.title} class="w-full h-full object-cover" />
         ) : (
-          <div class="w-full h-full flex items-center justify-center text-neutral-400">
-            <span class="text-6xl">🖼️</span>
-          </div>
+          <div class="w-full h-full flex items-center justify-center text-neutral-400 text-6xl">🖼️</div>
         )}
       </div>
 
       <div class="p-8">
-        <div class="flex items-center gap-3 mb-4">
-          <img src={profile.avatar_url || ''} class="w-10 h-10 rounded-full bg-neutral-200" />
+        <a href={`/profile/${project.user_id}`} class="flex items-center gap-3 mb-6 group w-fit">
+          <img src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.username}`} class="w-12 h-12 rounded-full bg-neutral-200 object-cover border border-neutral-200 dark:border-neutral-700" />
           <div>
-            <p class="font-bold text-neutral-900 dark:text-white">{displayName}</p>
+            <p class="font-bold text-lg text-neutral-900 dark:text-white group-hover:underline">{displayName}</p>
             <p class="text-sm text-neutral-500">@{profile.username}</p>
           </div>
-        </div>
+        </a>
 
-        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white mb-4">{project.title}</h1>
-        <p class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6">{project.description}</p>
+        <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-4">{project.title}</h1>
+        <p class="text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed mb-8">{project.description}</p>
 
         <div class="flex items-center justify-between pt-6 border-t border-neutral-100 dark:border-neutral-800">
-          <div class="flex items-center gap-4 text-sm text-neutral-500">
-            <span>👍 {project.likes || 0} likes</span>
-            <span>💬 {project.comments || 0} comments</span>
+          <div class="flex items-center gap-6 text-sm font-medium text-neutral-500">
+            <span class="flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
+              {project.likes || 0}
+            </span>
+            <span class="flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+              {comments?.length || 0}
+            </span>
           </div>
-          <div class="flex gap-2">
-            <button id="like-btn" class="px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+          <div class="flex gap-3">
+            <button id="like-btn" class="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-full text-sm font-bold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
               👍 Like
             </button>
-            <button id="comment-btn" class="px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            <button id="comment-btn-scroll" class="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
               💬 Comment
             </button>
           </div>
@@ -84,80 +83,71 @@ if (project) {
       </div>
     </div>
 
-    <div class="mt-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6" data-project-id={id}>
-      <h3 class="text-xl font-bold text-neutral-900 dark:text-white mb-6">Comments ({comments?.length || 0})</h3>
+    <div id="comments-section" class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm">
+      <h3 class="text-xl font-bold text-neutral-900 dark:text-white mb-6">Discussion</h3>
 
-      <!-- Comment Form -->
-      {currentUser && (
-        <form id="comment-form" class="mb-6">
-          <div class="flex gap-3">
-            <img src={currentUser.user_metadata?.avatar_url || ''} class="w-8 h-8 rounded-full bg-neutral-200" />
+      <div class="mb-10">
+        {currentUser ? (
+          <form id="comment-form" class="flex gap-4">
+            <input type="hidden" id="project_id" value={project.id} />
+            <div class="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden flex-shrink-0">
+               <img src={currentUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=user`} class="w-full h-full object-cover" />
+            </div>
             <div class="flex-1">
-              <textarea id="comment-content" rows="3" class="w-full px-4 py-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Write a comment..."></textarea>
-              <div class="flex justify-end mt-2">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Post Comment</button>
+              <textarea 
+                id="comment-content" 
+                rows="3" 
+                class="w-full px-4 py-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none text-sm" 
+                placeholder="What are your thoughts?"
+                required
+              ></textarea>
+              <div class="flex justify-end mt-3">
+                <button type="submit" class="px-6 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:opacity-90 transition-opacity">
+                  Post Comment
+                </button>
               </div>
             </div>
+          </form>
+        ) : (
+          <div class="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-6 text-center border border-dashed border-neutral-200 dark:border-neutral-700">
+            <p class="text-neutral-500 text-sm mb-3">Join the conversation to leave a comment.</p>
+            <a href="/login" class="inline-block px-6 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-sm rounded-full">Log In</a>
           </div>
-        </form>
-      )}
+        )}
+      </div>
 
-      <div class="space-y-4">
+      <div class="space-y-8">
         {comments && comments.length > 0 ? (
           comments.map((comment) => (
-            <div class="flex gap-3">
-              <img src={comment.profiles.avatar_url || ''} class="w-8 h-8 rounded-full bg-neutral-200" />
+            <div class="flex gap-4 group">
+              <a href={`/profile/${comment.user_id}`} class="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden flex-shrink-0">
+                <img src={comment.profiles.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${comment.profiles.username}`} class="w-full h-full object-cover" />
+              </a>
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <p class="font-bold text-sm text-neutral-900 dark:text-white">{comment.profiles.full_name || comment.profiles.username}</p>
-                  <p class="text-xs text-neutral-500">{new Date(comment.created_at).toLocaleDateString()}</p>
+                  <span class="font-bold text-sm text-neutral-900 dark:text-white hover:underline cursor-pointer">
+                    {comment.profiles.full_name || comment.profiles.username}
+                  </span>
+                  <span class="text-xs text-neutral-400">• {new Date(comment.created_at).toLocaleDateString()}</span>
                 </div>
-                <p class="text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                <p class="text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">{comment.content}</p>
               </div>
             </div>
           ))
         ) : (
-          <p class="text-neutral-500">No comments yet. Be the first to comment!</p>
+          <p class="text-neutral-400 italic text-center py-4">No comments yet.</p>
         )}
       </div>
     </div>
   </div>
 
-  <div id="service-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 px-4 backdrop-blur-sm">
-    <div class="bg-white dark:bg-neutral-900 p-8 rounded-2xl w-full max-w-lg shadow-2xl animate-fade-in-up">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">Create a new Gig</h2>
-        <button id="close-svc-modal" class="text-neutral-400 hover:text-neutral-900 dark:hover:text-white text-2xl">&times;</button>
-      </div>
-      <form id="service-form" class="space-y-6">
-        <div>
-          <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Gig Title</label>
-          <div class="relative">
-             <span class="absolute left-4 top-3 text-neutral-400 font-medium">I will</span>
-             <input type="text" id="svc-title" class="input-field w-full pl-14" placeholder="design a minimalist logo for you" required />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Price ($)</label>
-          <input type="number" id="svc-price" class="input-field w-full" placeholder="50" required />
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Description</label>
-          <textarea id="svc-desc" rows="4" class="input-field w-full resize-none" placeholder="Describe what you are offering..." required></textarea>
-        </div>
-        <button type="submit" class="w-full py-3.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-sm hover:opacity-90 transition-opacity shadow-lg">Publish Gig</button>
-      </form>
-    </div>
-  </div>
-
   ) : (
-    <div class="text-center py-20">
-      <h1 class="text-6xl font-bold text-neutral-900 mb-4">404</h1>
-      <h2 class="text-2xl font-semibold text-neutral-700 mb-8">Project Not Found</h2>
-      <p class="text-neutral-500 mb-8">The project you're looking for doesn't exist.</p>
-      <a href="/" class="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-800 transition-colors">
-        Go Home
-      </a>
+    <div class="flex items-center justify-center min-h-[60vh]">
+      <div class="text-center">
+        <h1 class="text-6xl font-bold text-neutral-900 dark:text-white mb-4">404</h1>
+        <p class="text-neutral-500 mb-8">Project not found.</p>
+        <a href="/explore" class="bg-neutral-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-full font-bold">Back to Explore</a>
+      </div>
     </div>
   )}
 
@@ -166,20 +156,24 @@ if (project) {
 <script>
   import { supabase } from '../../lib/supabase';
 
-  const commentForm = document.getElementById('comment-form') as HTMLFormElement;
-  const commentContent = document.getElementById('comment-content') as HTMLTextAreaElement;
-  const commentsContainer = document.querySelector('[data-project-id]') as HTMLElement;
-  const projectId = commentsContainer?.dataset.projectId;
-
-  if (commentForm && projectId) {
+  // 1. Comment Form Logic
+  const commentForm = document.getElementById('comment-form');
+  
+  if (commentForm) {
     commentForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const content = commentContent.value.trim();
-      if (!content) return;
+      
+      const contentEl = document.getElementById('comment-content') as HTMLTextAreaElement;
+      const projectIdEl = document.getElementById('project_id') as HTMLInputElement;
+      const content = contentEl.value.trim();
+      const projectId = projectIdEl.value;
 
+      // Check Session Client-Side
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
-        alert('Please log in to comment');
+        alert('You must be logged in to comment.');
+        window.location.href = '/login';
         return;
       }
 
@@ -190,33 +184,33 @@ if (project) {
       });
 
       if (error) {
-        alert('Error posting comment: ' + error.message);
+        alert('Error: ' + error.message);
       } else {
-        commentContent.value = '';
-        window.location.reload(); // Refresh to show new comment
+        window.location.reload(); 
       }
     });
   }
 
-  // Like button
+  // 2. Scroll to Comment
+  const scrollBtn = document.getElementById('comment-btn-scroll');
+  if (scrollBtn) {
+    scrollBtn.addEventListener('click', () => {
+      document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('comment-content')?.focus();
+    });
+  }
+
+  // 3. Like Logic (Placeholder)
   const likeBtn = document.getElementById('like-btn');
   if (likeBtn) {
     likeBtn.addEventListener('click', async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please log in to like');
+        alert('Please log in to like posts.');
         return;
       }
-      alert('Like functionality coming soon!');
-    });
-  }
-
-  // Comment button - scroll to form
-  const commentBtn = document.getElementById('comment-btn');
-  if (commentBtn) {
-    commentBtn.addEventListener('click', () => {
-      commentContent?.focus();
-      commentContent?.scrollIntoView({ behavior: 'smooth' });
+      // Add your like logic here later (insert into 'likes' table)
+      alert('Liked! (Feature coming soon)');
     });
   }
 </script>

@@ -6,9 +6,9 @@ const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token")?.value;
 const refreshToken = cookies.get("sb-refresh-token")?.value;
 
-let session = null;
-let user = null;
-let profile = null;
+let session: any = null;
+let user: any = null;
+let profile: any = null;
 
 if (accessToken && refreshToken) {
   const { data, error } = await supabase.auth.setSession({
@@ -137,12 +137,26 @@ const displayInitial = displayName.charAt(0).toUpperCase();
   import { supabase } from '../lib/supabase';
   const isDev = window.location.hostname === 'localhost';
 
+  // Function to get cookie value
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  // Initialize session from cookies on page load
+  const accessToken = getCookie('sb-access-token');
+  const refreshToken = getCookie('sb-refresh-token');
+  if (accessToken && refreshToken) {
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  }
+
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
       const cookieOptions = isDev ? 'path=/; max-age=31536000; SameSite=Lax' : 'path=/; max-age=31536000; SameSite=Lax; Secure';
       document.cookie = `sb-access-token=${session.access_token}; ${cookieOptions}`;
       document.cookie = `sb-refresh-token=${session.refresh_token}; ${cookieOptions}`;
-      
+
       if (!document.cookie.includes('sb-access-token')) {
          window.location.reload();
       }

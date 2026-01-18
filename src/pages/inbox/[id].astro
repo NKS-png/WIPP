@@ -1,0 +1,431 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+// Force no-cache for real-time updates
+Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
+
+const { id: conversationId } = Astro.params;
+
+// Get session from cookies (server-side auth)
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+let currentUser = null;
+if (accessToken && refreshToken) {
+  const { data } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  currentUser = data.session?.user;
+}
+
+// Redirect if not logged in
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+// Get conversation participants - simplified approach
+const { data: allParticipants } = await supabase
+  .from('conversation_participants')
+  .select('user_id')
+  .eq('conversation_id', conversationId);
+
+console.log('All participants in conversation:', allParticipants);
+console.log('Current user ID:', currentUser.id);
+console.log('Conversation ID:', conversationId);
+
+// Check if current user is actually a participant
+const isCurrentUserParticipant = allParticipants?.some(p => p.user_id === currentUser.id);
+console.log('Is current user a participant?', isCurrentUserParticipant);
+
+// If current user is not a participant, this explains why they can't see messages
+if (!isCurrentUserParticipant) {
+  console.log('❌ PROBLEM: Current user not in conversation participants!');
+}
+
+// Find the other user (not current user)
+let otherUserId = allParticipants?.find(p => p.user_id !== currentUser.id)?.user_id;
+
+console.log('Other user ID:', otherUserId);
+
+// If no other user found, this conversation might be broken
+// Try to get the target user from the URL or conversation context
+if (!otherUserId && allParticipants?.length === 0) {
+  console.log('No participants found - conversation may be broken');
+} else if (!otherUserId && allParticipants?.length === 1) {
+  console.log('Only one participant found - missing other user');
+}
+
+// Fetch the other user's profile directly
+let displayName = 'Unknown User';
+let displayAvatar = 'https://api.dicebear.com/7.x/initials/svg?seed=Unknown';
+
+if (otherUserId) {
+  const { data: otherUserProfile, error: profileError } = await supabase
+    .from('profiles')
+    .select('username, full_name, avatar_url')
+    .eq('id', otherUserId)
+    .single();
+  
+  console.log('Other user profile:', { otherUserProfile, profileError });
+  
+  if (otherUserProfile) {
+    displayName = otherUserProfile.full_name || otherUserProfile.username || 'Unknown User';
+    displayAvatar = otherUserProfile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`;
+  }
+} else {
+  console.log('No other user ID found - conversation needs repair');
+}
+
+// Get messages
+const { data: messages, error: messagesError } = await supabase
+  .from('messages')
+  .select('*')
+  .eq('conversation_id', conversationId)
+  .order('created_at', { ascending: true });
+
+console.log('Messages query result:', { messages, messagesError, count: messages?.length || 0 });
+---
+
+<BaseLayout title={`Chat with ${displayName}`}>
+  
+  <div class="flex flex-col h-[calc(100vh-64px)] md:h-[calc(100vh-80px)] bg-white dark:bg-neutral-900 relative">
+    
+    <!-- Header -->
+    <div class="sticky top-0 z-20 px-4 md:px-6 py-4 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3 md:gap-4">
+        <!-- Back Button (Mobile) -->
+        <a 
+          href="/inbox" 
+          class="p-2 -ml-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors md:hidden"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+        
+        <!-- User Avatar -->
+        <div class="relative">
+          <img 
+            src={displayAvatar} 
+            alt={displayName} 
+            class="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-neutral-200 dark:border-neutral-700 shadow-sm" 
+          />
+          <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full"></div>
+        </div>
+        
+        <!-- User Info -->
+        <div>
+          <h1 class="text-base md:text-lg font-bold text-neutral-900 dark:text-white leading-tight">
+            {displayName}
+          </h1>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> 
+            Online now
+          </p>
+        </div>
+      </div>
+
+      <!-- Options Menu -->
+      <button class="p-2 rounded-full text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Messages Container -->
+    <div 
+      id="messages-container" 
+      class="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 scroll-smooth bg-neutral-50 dark:bg-black"
+    >
+      
+      <!-- Date Divider -->
+      <div class="flex justify-center">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-3 py-1 rounded-full shadow-sm">
+          Today
+        </span>
+      </div>
+
+      <!-- Messages -->
+      {messages && messages.map((msg) => {
+        const isMe = msg.sender_id === currentUser.id;
+        return (
+          <div class={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in-up`} data-message-id={msg.id}>
+            <div class={`flex max-w-[85%] md:max-w-[70%] gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+              
+              <!-- Message Bubble -->
+              <div 
+                class={`group relative px-4 md:px-5 py-2.5 md:py-3 shadow-sm text-sm md:text-base leading-relaxed break-words
+                  ${isMe 
+                    ? 'bg-neutral-900 dark:bg-white text-white dark:text-black rounded-2xl rounded-tr-md' 
+                    : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white rounded-2xl rounded-tl-md'
+                  }`}
+              >
+                <p class="whitespace-pre-wrap">{msg.content}</p>
+                
+                <!-- Timestamp (shows on hover) -->
+                <span 
+                  class={`text-[10px] absolute -bottom-5 min-w-max opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-neutral-400 dark:text-neutral-500 ${isMe ? 'right-0' : 'left-0'}`}
+                >
+                  {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              </div>
+
+            </div>
+          </div>
+        )
+      })}
+
+      <!-- Scroll anchor -->
+      <div id="scroll-anchor"></div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="sticky bottom-0 p-4 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-lg">
+      <form id="message-form" class="max-w-4xl mx-auto relative flex items-center gap-2 md:gap-3">
+        
+        <!-- Image Upload Button -->
+        <button 
+          type="button" 
+          class="p-2.5 md:p-3 text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+          title="Attach image"
+        >
+          <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </button>
+
+        <!-- Text Input -->
+        <input
+          type="text"
+          id="message-input"
+          placeholder="Type a message..."
+          autocomplete="off"
+          class="flex-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 border-none rounded-full py-3 md:py-3.5 px-5 md:px-6 focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all shadow-inner text-sm md:text-base"
+          required
+        />
+
+        <!-- Send Button -->
+        <button
+          type="submit"
+          id="send-btn"
+          class="p-2.5 md:p-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:scale-105 active:scale-95 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script define:vars={{ conversationId, currentUserId: currentUser?.id }}>
+  const container = document.getElementById('messages-container');
+  const form = document.getElementById('message-form');
+  const input = document.getElementById('message-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  // Scroll to bottom function
+  function scrollToBottom(smooth = false) {
+    if (container) {
+      if (smooth) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      } else {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }
+
+  // Initial scroll to bottom
+  setTimeout(() => scrollToBottom(), 100);
+
+  // Create message element
+  function createMessageElement(text, isMe, timestamp = 'Just now', messageId = null) {
+    const div = document.createElement('div');
+    div.className = 'flex w-full ' + (isMe ? 'justify-end' : 'justify-start') + ' animate-fade-in-up';
+    if (messageId) {
+      div.setAttribute('data-message-id', messageId);
+    }
+    
+    div.innerHTML = 
+      '<div class="flex max-w-[85%] md:max-w-[70%] gap-2 ' + (isMe ? 'flex-row-reverse' : 'flex-row') + '">' +
+        '<div class="group relative px-4 md:px-5 py-2.5 md:py-3 shadow-sm text-sm md:text-base leading-relaxed break-words ' +
+          (isMe 
+            ? 'bg-neutral-900 dark:bg-white text-white dark:text-black rounded-2xl rounded-tr-md' 
+            : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white rounded-2xl rounded-tl-md'
+          ) + '">' +
+          '<p class="whitespace-pre-wrap">' + escapeHtml(text) + '</p>' +
+          '<span class="text-[10px] absolute -bottom-5 min-w-max opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-neutral-400 dark:text-neutral-500 ' + (isMe ? 'right-0' : 'left-0') + '">' +
+            timestamp +
+          '</span>' +
+        '</div>' +
+      '</div>';
+    return div;
+  }
+
+  // Escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Simple message sending without duplicates
+  if (form && input) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = input.value.trim();
+      if (!content) return;
+
+      // Disable input while sending
+      sendBtn.disabled = true;
+      input.disabled = true;
+
+      try {
+        input.value = ''; // Clear input immediately
+
+        // Send via fetch - NO optimistic UI to avoid duplicates
+        console.log('Sending message to API...');
+        const response = await fetch('/api/send-message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            content: content
+          })
+        });
+
+        console.log('Response status:', response.status);
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
+
+        if (!response.ok) {
+          throw new Error(responseData.error || 'Failed to send message');
+        }
+
+        // Message sent successfully - add it to the UI immediately
+        const msgEl = createMessageElement(content, true, 'Just now');
+        container.appendChild(msgEl);
+        scrollToBottom(true);
+        
+        console.log('Message sent and displayed');
+        
+      } catch (err) {
+        console.error('Error sending message:', err);
+        alert('Failed to send message: ' + err.message);
+        input.value = content; // Restore message on error
+      } finally {
+        // Re-enable input
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    });
+  }
+
+  // Auto-focus input
+  if (input) {
+    input.focus();
+  }
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    setTimeout(() => scrollToBottom(), 100);
+  });
+
+  // Polling for new messages with duplicate prevention
+  let lastMessageId = null;
+  
+  // Get the ID of the last message currently displayed
+  function getLastMessageId() {
+    const messages = container.querySelectorAll('.animate-fade-in-up');
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      return lastMsg.getAttribute('data-message-id');
+    }
+    return null;
+  }
+  
+  setInterval(async () => {
+    try {
+      const response = await fetch(`/api/get-messages?conversation_id=${conversationId}&after=${Date.now() - 10000}`);
+      if (response.ok) {
+        const { messages } = await response.json();
+        
+        if (messages && messages.length > 0) {
+          messages.forEach(msg => {
+            // Only add messages from other users and avoid duplicates
+            if (msg.sender_id !== currentUserId) {
+              // Check if this message is already displayed
+              const existingMsg = container.querySelector(`[data-message-id="${msg.id}"]`);
+              if (!existingMsg) {
+                const msgEl = createMessageElement(
+                  msg.content, 
+                  false,
+                  new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                );
+                msgEl.setAttribute('data-message-id', msg.id);
+                container.appendChild(msgEl);
+                scrollToBottom(true);
+              }
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.log('Polling error (normal):', error);
+    }
+  }, 3000); // Check every 3 seconds
+</script>
+
+<style>
+  /* Fade in animation for new messages */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  /* Custom scrollbar */
+  #messages-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #messages-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #messages-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+
+  .dark #messages-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  #messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .dark #messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import MessageButton from '../../components/MessageButton.astro';
 import { supabase } from '../../lib/supabase';
 
 // 1. FORCE NO-CACHE (The Fix)
@@ -47,6 +48,10 @@ const { data: discussions } = await supabase
 
 const displayName = profile.full_name || profile.username || "Unknown";
 const initial = displayName.charAt(0).toUpperCase();
+
+console.log('Profile ID:', id);
+console.log('Current User:', currentUser);
+console.log('isOwner:', isOwner);
 ---
 
 <BaseLayout title={displayName}>
@@ -57,7 +62,7 @@ const initial = displayName.charAt(0).toUpperCase();
 
       {profile.banner_url ? (
         <img
-          src={`${profile.banner_url}?t=${Date.now()}`}
+          src={profile.banner_url}
           class="w-full h-full object-cover"
           alt="Profile Banner"
         />
@@ -108,15 +113,24 @@ const initial = displayName.charAt(0).toUpperCase();
                    <a href="/settings" class="px-4 py-2 text-sm font-medium border border-neutral-300 dark:border-neutral-700 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white">
                      Edit Profile
                    </a>
-                 ) : (
-                   <button class="px-6 py-2 text-sm font-medium bg-neutral-900 dark:bg-white text-white dark:text-black rounded-full hover:opacity-90 transition-opacity">
-                     Follow
-                   </button>
-                 )}
+                 ) : currentUser ? (
+                   <>
+                     <button class="px-6 py-2 text-sm font-medium bg-neutral-900 dark:bg-white text-white dark:text-black rounded-full hover:opacity-90 transition-opacity">
+                       Follow
+                     </button>
+                     <MessageButton userId={id} username={profile.username || 'user'} variant="secondary" size="sm" />
+                   </>
+                 ) : null}
               </div>
            </div>
         </div>
       </div>
+
+      {!isOwner && currentUser && (
+        <div class="flex justify-center mb-6">
+          <MessageButton userId={id} username={profile.username || 'user'} variant="primary" size="lg" />
+        </div>
+      )}
 
       <div class="flex gap-8 border-b border-neutral-200 dark:border-neutral-800 text-sm font-medium">
         <button class="tab-btn active-tab pb-4 border-b-2 border-black dark:border-white text-black dark:text-white" data-target="tab-portfolio">
@@ -193,10 +207,11 @@ const initial = displayName.charAt(0).toUpperCase();
 
 <script>
   import { createClient } from '@supabase/supabase-js';
+  import { openChat } from '../../lib/supabase';
 
   // Initialize Client
   const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL, 
+    import.meta.env.PUBLIC_SUPABASE_URL,
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY
   );
 
@@ -311,5 +326,19 @@ const initial = displayName.charAt(0).toUpperCase();
       }
     });
   }
+
+  // --- MESSAGE BUTTONS ---
+  const messageBtns = ['message-btn', 'message-btn-large'];
+  messageBtns.forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const targetUserId = JSON.parse(btn.getAttribute('data-target-user-id') || 'null');
+        if (targetUserId) {
+          openChat(targetUserId);
+        }
+      });
+    }
+  });
 
 </script>

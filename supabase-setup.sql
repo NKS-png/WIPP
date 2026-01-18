@@ -115,6 +115,14 @@ create policy "Auth Avatar Uploads" on storage.objects for insert with check ( b
 create policy "Auth Avatar Updates" on storage.objects for update using ( bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1] );
 -- Allow users to delete their own avatars
 create policy "Auth Avatar Deletes" on storage.objects for delete using ( bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1] );
+
+-- 23.5. Storage Bucket for Community Banners
+insert into storage.buckets (id, name, public) values ('banners', 'banners', true);
+
+-- Allow public access to banners
+create policy "Public Banners" on storage.objects for select using ( bucket_id = 'banners' );
+-- Allow authenticated uploads
+create policy "Auth Banner Uploads" on storage.objects for insert with check ( bucket_id = 'banners' and auth.role() = 'authenticated' );
 -- Dummy data
 INSERT INTO services (title, description, price, delivery_days, user_id) VALUES ('Web Development', 'Build modern web applications', 100.00, 7, '66e79b59-d55d-4541-8e51-6aaee5b8720a');
 INSERT INTO discussions (content, user_id, profile_id) VALUES ('Great profile! Looking forward to your projects.', '66e79b59-d55d-4541-8e51-6aaee5b8720a', '66e79b59-d55d-4541-8e51-6aaee5b8720a');
@@ -174,3 +182,60 @@ create policy "Public community_posts" on public.community_posts for select usin
 create policy "Users insert community_posts" on public.community_posts for insert with check (auth.uid() = user_id);
 create policy "Users update community_posts" on public.community_posts for update using (auth.uid() = user_id);
 create policy "Users delete community_posts" on public.community_posts for delete using (auth.uid() = user_id);
+
+-- 23. Fix for Community Feature: Ensure admin_id and correct RLS policies
+
+-- Rename creator_id to admin_id if exists
+-- Assuming you ran: ALTER TABLE communities RENAME COLUMN creator_id TO admin_id;
+
+-- If not, add admin_id
+ALTER TABLE communities ADD COLUMN IF NOT EXISTS admin_id UUID REFERENCES auth.users(id);
+
+-- Create posts table if not exists (assuming it's separate from community_posts)
+CREATE TABLE IF NOT EXISTS public.posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  community_id UUID REFERENCES public.communities(id) NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL
+);
+
+-- Enable RLS on posts
+ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+
+-- Drop all existing policies on communities, community_members, posts
+DROP POLICY IF EXISTS "Public communities" ON communities;
+DROP POLICY IF EXISTS "Users insert communities" ON communities;
+DROP POLICY IF EXISTS "Creators update communities" ON communities;
+DROP POLICY IF EXISTS "Creators delete communities" ON communities;
+DROP POLICY IF EXISTS "Public community_members" ON community_members;
+DROP POLICY IF EXISTS "Users insert community_members" ON community_members;
+DROP POLICY IF EXISTS "Users delete community_members" ON community_members;
+DROP POLICY IF EXISTS "Users update community_members" ON community_members;
+DROP POLICY IF EXISTS "Public posts" ON posts;
+DROP POLICY IF EXISTS "Users insert posts" ON posts;
+DROP POLICY IF EXISTS "Users update posts" ON posts;
+DROP POLICY IF EXISTS "Users delete posts" ON posts;
+
+-- New policies for communities
+CREATE POLICY "communities_select" ON communities FOR SELECT USING (true);
+CREATE POLICY "communities_update" ON communities FOR UPDATE USING (auth.uid() = admin_id);
+
+-- New policies for community_members
+CREATE POLICY "community_members_select" ON community_members FOR SELECT USING (true);
+CREATE POLICY "community_members_insert" ON community_members FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "community_members_delete" ON community_members FOR DELETE USING (auth.uid() = user_id);
+
+-- New policies for posts
+CREATE POLICY "posts_select" ON posts FOR SELECT USING (true);
+CREATE POLICY "posts_insert" ON posts FOR INSERT WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM community_members
+    WHERE community_id = posts.community_id AND user_id = auth.uid()
+  ) OR
+  EXISTS (
+    SELECT 1 FROM communities
+    WHERE id = posts.community_id AND admin_id = auth.uid()
+  )
+);

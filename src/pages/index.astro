@@ -3,6 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { supabase } from '../lib/supabase';
 
+const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
+
+function getEmojiAvatar(username: string): string {
+  const hash = username.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+  const emoji = emojis[hash % emojis.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3f4f6"/><text x="50" y="65" font-size="50" text-anchor="middle">${emoji}</text></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
+}
+
 // 1. FETCH PROJECTS (The Main Feed)
 const { data: projects, error } = await supabase
   .from('projects')
@@ -104,13 +113,7 @@ const categories = [
           {creators?.map((creator) => (
             <a href={`/profile/${creator.id}`} class="flex items-center gap-3 group">
               <div class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border border-neutral-100 dark:border-neutral-700">
-                {creator.avatar_url ? (
-                  <img src={creator.avatar_url} class="w-full h-full object-cover" />
-                ) : (
-                  <div class="w-full h-full flex items-center justify-center font-bold text-neutral-500 text-xs">
-                    {creator.username?.[0]?.toUpperCase()}
-                  </div>
-                )}
+                <img src={creator.avatar_url || getEmojiAvatar(creator.username || 'user')} class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-blue-600 transition-colors">

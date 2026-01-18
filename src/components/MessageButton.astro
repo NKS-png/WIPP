@@ -1,0 +1,49 @@
+---
+export interface Props {
+  userId: string;
+  username: string | undefined;
+  variant?: 'primary' | 'secondary';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { userId, username, variant = 'primary', size = 'md' } = Astro.props;
+
+const sizeClasses = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-2.5 text-base',
+  lg: 'px-8 py-3 text-lg'
+};
+
+const variantClasses = {
+  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+  secondary: 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800'
+};
+---
+
+<button
+  id={`message-btn-${userId}`}
+  data-user-id={userId}
+  data-username={username}
+  class={`inline-flex items-center gap-2 font-semibold rounded-full transition-colors duration-200 ${sizeClasses[size]} ${variantClasses[variant]}`}
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+  Message
+</button>
+
+<script>
+  import { openChat } from '../lib/supabase';
+
+  // Handle all message buttons
+  document.addEventListener('click', (e) => {
+    const button = e.target.closest('[id^="message-btn-"]');
+    if (button) {
+      e.preventDefault();
+      const userId = button.getAttribute('data-user-id');
+      if (userId) {
+        openChat(userId);
+      }
+    }
+  });
+</script>

@@ -1,0 +1,73 @@
+---
+// Notification Toast Component
+---
+
+<div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<script>
+  // Global notification system
+  window.showNotification = function(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+
+    const notification = document.createElement('div');
+    notification.className = `
+      px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-out
+      flex items-center gap-3 max-w-sm animate-slide-in
+      ${type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        type === 'warning' ? 'bg-yellow-500 text-black' :
+        'bg-blue-500 text-white'}
+    `;
+
+    const icon = type === 'success' ? '✓' : 
+                 type === 'error' ? '✕' : 
+                 type === 'warning' ? '⚠' : 
+                 'ℹ';
+
+    notification.innerHTML = `
+      <span class="text-lg font-bold">${icon}</span>
+      <span class="text-sm font-medium">${message}</span>
+      <button class="ml-auto text-lg hover:opacity-70" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(notification);
+
+    // Auto remove after duration
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, duration);
+  };
+
+  // Message notification with sound
+  window.showMessageNotification = function(senderName, preview) {
+    const message = `${senderName}: ${preview.length > 30 ? preview.substring(0, 30) + '...' : preview}`;
+    showNotification(message, 'info', 4000);
+    
+    // Play notification sound
+    if (window.playNotificationSound) {
+      window.playNotificationSound();
+    }
+  };
+</script>
+
+<style>
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out forwards;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+</style>

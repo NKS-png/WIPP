@@ -224,3 +224,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 16. Grant execute on function
 GRANT EXECUTE ON FUNCTION get_my_inbox() TO authenticated;
+
+-- 17. Add support for multiple images in posts
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_urls JSONB DEFAULT '[]'::jsonb;

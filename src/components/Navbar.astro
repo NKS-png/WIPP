@@ -36,11 +36,12 @@ const displayName = profile?.username || profile?.full_name || user?.email?.spli
 const displayInitial = displayName.charAt(0).toUpperCase();
 ---
 
-<nav class="w-full border-b border-neutral-100 dark:border-neutral-900 bg-white/80 dark:bg-black/80 backdrop-blur-xl sticky top-0 z-40 transition-colors duration-300">
-  <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
+<nav class="w-full sticky top-0 z-[60] transition-colors duration-300 px-4 pt-2">
+  <div class="bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-neutral-100 dark:border-neutral-800 rounded-2xl shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
     
     <div class="flex items-center gap-8">
-      <a href="/" class="flex items-center gap-2 group relative z-[60]">
+      <a href="/" class="flex items-center gap-2 group relative z-[70]">
         <img src="/logo.png" alt="Logo" class="h-16 w-auto dark:hidden group-hover:scale-105 transition-transform object-contain" />
         <img src="/darklogo.png" alt="Logo" class="h-16 w-auto hidden dark:block group-hover:scale-105 transition-transform object-contain" />
       </a>
@@ -51,12 +52,12 @@ const displayInitial = displayName.charAt(0).toUpperCase();
         <a href="/services" class="hover:text-neutral-900 dark:hover:text-white transition-colors">Services</a>
         <a href="/communities" class="hover:text-neutral-900 dark:hover:text-white transition-colors">Communities</a>
         {session && (
-          <a href="/inbox" class="hover:text-neutral-900 dark:hover:text-white transition-colors relative">
+          <a href="/inbox" class="hover:text-neutral-900 dark:hover:text-white transition-colors relative" id="inbox-link">
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             Inbox
-            <span id="unread-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+            <span id="unread-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold notification-dot">
               0
             </span>
           </a>
@@ -64,7 +65,7 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       </div>
     </div>
 
-    <div class="flex-1 max-w-md hidden md:block">
+    <div class="flex-1 max-w-md hidden md:block relative">
       <div class="relative group">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-4 w-4 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,16 +74,32 @@ const displayInitial = displayName.charAt(0).toUpperCase();
         </div>
         <input 
             type="text" 
-            placeholder="Search..." 
+            id="navbar-search"
+            placeholder="Search users..." 
             class="block w-full pl-10 pr-3 py-2 border border-neutral-200 dark:border-neutral-800 rounded-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-black focus:ring-1 focus:ring-neutral-900 dark:focus:ring-neutral-700 sm:text-sm transition-all" 
+            autocomplete="off"
         />
+        
+        <!-- Search Results Dropdown -->
+        <div id="search-results" class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl max-h-80 overflow-y-auto hidden z-[80]">
+          <div id="search-loading" class="hidden p-4 text-center text-neutral-500">
+            <div class="animate-spin w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full mx-auto mb-2"></div>
+            Searching...
+          </div>
+          <div id="search-empty" class="hidden p-4 text-center text-neutral-500 text-sm">
+            No users found
+          </div>
+          <div id="search-list" class="py-2">
+            <!-- Search results will be inserted here -->
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
       <ThemeToggle />
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white relative z-50">
+      <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white relative z-[70]">
         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
@@ -106,12 +123,39 @@ const displayInitial = displayName.charAt(0).toUpperCase();
                 )}
               </button>
               
-              <div class="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-2 group-hover:translate-y-0 z-50">
+              <div class="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-2 group-hover:translate-y-0 z-[70]">
                 <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
                   <div class="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
                     <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Signed in as</p>
                     <p class="text-sm font-bold text-neutral-900 dark:text-white truncate">{displayName}</p>
                   </div>
+                  
+                  <!-- Encryption Status -->
+                  <div class="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
+                    <div id="encryption-status" class="flex items-center gap-2 text-xs">
+                      <div id="encryption-locked" class="flex items-center gap-2 text-amber-600">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span>Keys locked</span>
+                        <button id="unlock-keys-navbar" class="text-blue-600 hover:text-blue-800 underline">Unlock</button>
+                      </div>
+                      <div id="encryption-unlocked" class="hidden flex items-center gap-2 text-green-600">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-3a1 1 0 011-1h2.586l6.414-6.414a6 6 0 015.743-7.743z" />
+                        </svg>
+                        <span>Keys unlocked</span>
+                      </div>
+                      <div id="encryption-none" class="hidden flex items-center gap-2 text-neutral-500">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>No encryption</span>
+                        <button id="setup-encryption-navbar" class="text-blue-600 hover:text-blue-800 underline">Setup</button>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div class="py-1">
                     <a href={`/profile/${user.id}`} class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Your Profile</a>
                     <a href="/settings" class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Settings</a>
@@ -153,7 +197,12 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       <a href="/services" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Services</a>
       <a href="/communities" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Community</a>
       {session && (
-        <a href="/inbox" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">📨 Inbox</a>
+        <a href="/inbox" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter relative">
+          📨 Inbox
+          <span id="mobile-unread-badge" class="hidden absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold notification-dot">
+            0
+          </span>
+        </a>
       )}
     </nav>
 
@@ -220,23 +269,28 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       const cookieOptions = isDev ? 'path=/; max-age=31536000; SameSite=Lax' : 'path=/; max-age=31536000; SameSite=Lax; Secure';
       document.cookie = `sb-access-token=${session.access_token}; ${cookieOptions}`;
       document.cookie = `sb-refresh-token=${session.refresh_token}; ${cookieOptions}`;
-      // ✅ GOOD CODE (Stops Infinite Loops)
+      
+      // CRITICAL FIX: Prevent infinite reload loops
       if (!document.cookie.includes('sb-access-token')) {
-        // Only reload IF we haven't tried yet (using a flag)
-        if (!sessionStorage.getItem('auth_reload_attempted')) {
-          sessionStorage.setItem('auth_reload_attempted', 'true');
+        if (!sessionStorage.getItem('auth_retry')) {
+          sessionStorage.setItem('auth_retry', 'true');
           window.location.reload();
-        } else {
-          console.warn('Session sync failed, but stopping reload loop to save bandwidth.');
         }
       } else {
         // Reset the flag on success
-        sessionStorage.removeItem('auth_reload_attempted');
+        sessionStorage.removeItem('auth_retry');
       }
     } else if (event === 'SIGNED_OUT') {
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      if (document.cookie.includes('sb-access-token')) window.location.reload();
+      if (document.cookie.includes('sb-access-token')) {
+        if (!sessionStorage.getItem('signout_retry')) {
+          sessionStorage.setItem('signout_retry', 'true');
+          window.location.reload();
+        }
+      } else {
+        sessionStorage.removeItem('signout_retry');
+      }
     }
   });
 
@@ -269,36 +323,241 @@ const displayInitial = displayName.charAt(0).toUpperCase();
   });
 
   // --- UNREAD COUNT ---
-  // Temporarily disabled due to Supabase configuration issues
-  // async function updateUnreadCount() {
-  //   const { data: { session } } = await supabase.auth.getSession();
-  //   if (!session) return;
+  async function updateUnreadCount() {
+    try {
+      const response = await fetch('/api/unread-count');
+      if (response.ok) {
+        const { count } = await response.json();
+        
+        const badge = document.getElementById('unread-badge');
+        const mobileBadge = document.getElementById('mobile-unread-badge');
+        
+        if (count && count > 0) {
+          const displayCount = count > 99 ? '99+' : count.toString();
+          
+          if (badge) {
+            badge.textContent = displayCount;
+            badge.classList.remove('hidden');
+          }
+          if (mobileBadge) {
+            mobileBadge.textContent = displayCount;
+            mobileBadge.classList.remove('hidden');
+          }
+          
+          // Play notification sound if count increased
+          const lastCount = parseInt(localStorage.getItem('lastUnreadCount') || '0');
+          if (count > lastCount) {
+            playNotificationSound();
+            
+            // Show notification if not on inbox page
+            if (!window.location.pathname.includes('/inbox') && window.showNotification) {
+              window.showNotification(`You have ${count} unread message${count > 1 ? 's' : ''}`, 'info', 4000);
+            }
+          }
+          localStorage.setItem('lastUnreadCount', count.toString());
+        } else {
+          if (badge) badge.classList.add('hidden');
+          if (mobileBadge) mobileBadge.classList.add('hidden');
+          localStorage.setItem('lastUnreadCount', '0');
+        }
+      }
+    } catch (error) {
+      console.log('Error updating unread count:', error);
+    }
+  }
 
-  //   const { count } = await supabase
-  //     .from('messages')
-  //     .select('*', { count: 'exact', head: true })
-  //     .eq('is_read', false)
-  //     .neq('sender_id', session.user.id);
+  // --- USER SEARCH FUNCTIONALITY ---
+  const searchInput = document.getElementById('navbar-search');
+  const searchResults = document.getElementById('search-results');
+  const searchLoading = document.getElementById('search-loading');
+  const searchEmpty = document.getElementById('search-empty');
+  const searchList = document.getElementById('search-list');
+  let searchTimeout;
 
-  //   const badge = document.getElementById('unread-badge');
-  //   if (badge && count && count > 0) {
-  //     badge.textContent = count.toString();
-  //     badge.classList.remove('hidden');
-  //   }
-  // }
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      
+      clearTimeout(searchTimeout);
+      
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+      
+      searchTimeout = setTimeout(() => {
+        performSearch(query);
+      }, 300);
+    });
 
-  // // Update on page load
-  // updateUnreadCount();
+    searchInput.addEventListener('focus', () => {
+      if (searchInput.value.trim().length >= 2) {
+        searchResults.classList.remove('hidden');
+      }
+    });
 
-  // // Update on new messages
-  // supabase
-  //   .channel('navbar_unread')
-  //   .on('postgres_changes', {
-  //     event: 'INSERT',
-  //     schema: 'public',
-  //     table: 'messages'
-  //   }, () => {
-  //     updateUnreadCount();
-  //   })
-  //   .subscribe();
+    // Hide search results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+  }
+
+  async function performSearch(query) {
+    if (!searchInput) return;
+    
+    searchResults.classList.remove('hidden');
+    searchLoading.classList.remove('hidden');
+    searchEmpty.classList.add('hidden');
+    searchList.innerHTML = '';
+
+    try {
+      const response = await fetch(`/api/search-users?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      searchLoading.classList.add('hidden');
+
+      if (data.users && data.users.length > 0) {
+        searchEmpty.classList.add('hidden');
+        
+        data.users.forEach(user => {
+          const userItem = document.createElement('a');
+          userItem.href = `/profile/${user.id}`;
+          userItem.className = 'flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors';
+          userItem.innerHTML = `
+            <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-full object-cover" />
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-neutral-900 dark:text-white truncate">${user.displayName}</div>
+              <div class="text-xs text-neutral-500 truncate">@${user.username}</div>
+            </div>
+          `;
+          
+          userItem.addEventListener('click', () => {
+            searchResults.classList.add('hidden');
+            searchInput.value = '';
+          });
+          
+          searchList.appendChild(userItem);
+        });
+      } else {
+        searchEmpty.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      searchLoading.classList.add('hidden');
+      searchEmpty.classList.remove('hidden');
+      searchEmpty.textContent = 'Search failed. Please try again.';
+    }
+  }
+
+  // Notification sound
+  function playNotificationSound() {
+    try {
+      // Create a subtle notification sound
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+    }
+  }
+
+  // Make notification sound and update function globally available
+  window.playNotificationSound = playNotificationSound;
+  window.updateNavbarUnreadCount = updateUnreadCount;
+
+  // --- ENCRYPTION STATUS ---
+  async function updateEncryptionStatus() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Import keyManager dynamically to avoid issues
+      const { keyManager } = await import('../lib/keyManager.js');
+      
+      const encryptionLocked = document.getElementById('encryption-locked');
+      const encryptionUnlocked = document.getElementById('encryption-unlocked');
+      const encryptionNone = document.getElementById('encryption-none');
+      
+      // Check if user has encryption keys
+      const hasKeys = await keyManager.hasEncryptionKeys(session.user.id);
+      
+      if (!hasKeys) {
+        // No encryption setup
+        encryptionLocked?.classList.add('hidden');
+        encryptionUnlocked?.classList.add('hidden');
+        encryptionNone?.classList.remove('hidden');
+      } else if (keyManager.isUnlocked) {
+        // Keys are unlocked
+        encryptionLocked?.classList.add('hidden');
+        encryptionNone?.classList.add('hidden');
+        encryptionUnlocked?.classList.remove('hidden');
+      } else {
+        // Keys are locked
+        encryptionUnlocked?.classList.add('hidden');
+        encryptionNone?.classList.add('hidden');
+        encryptionLocked?.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error updating encryption status:', error);
+    }
+  }
+
+  // Handle encryption buttons
+  document.getElementById('unlock-keys-navbar')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.showUnlockKeys) {
+      window.showUnlockKeys();
+    }
+  });
+
+  document.getElementById('setup-encryption-navbar')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.showEncryptionSetup) {
+      window.showEncryptionSetup();
+    }
+  });
+
+  // Update encryption status on page load and periodically
+  updateEncryptionStatus();
+  setInterval(updateEncryptionStatus, 5000);
+
+  // Update on page load
+  updateUnreadCount();
+
+  // Update every 10 seconds
+  setInterval(updateUnreadCount, 10000);
+
+  // Update on new messages via realtime subscription
+  supabase
+    .channel('navbar_unread')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages'
+    }, () => {
+      setTimeout(updateUnreadCount, 1000); // Small delay to ensure data is available
+    })
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'message_reads'
+    }, () => {
+      setTimeout(updateUnreadCount, 500); // Update when messages are marked as read
+    })
+    .subscribe();
 </script>

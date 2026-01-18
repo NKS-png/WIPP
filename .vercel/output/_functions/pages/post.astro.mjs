@@ -1,0 +1,25 @@
+/* empty css                                 */
+import { e as createComponent, k as renderComponent, p as renderScript, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_Bc4ROJMT.mjs';
+import 'piccolore';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_CXZjk4io.mjs';
+export { renderers } from '../renderers.mjs';
+
+const $$Post = createComponent(async ($$result, $$props, $$slots) => {
+  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "title": "Post Project" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div id="auth-loading" class="min-h-[60vh] flex flex-col items-center justify-center"> <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-neutral-900 dark:border-white mb-4"></div> <p class="text-neutral-500 text-sm animate-pulse">Verifying account...</p> </div> <div id="post-content" class="max-w-xl mx-auto py-12 hidden"> <div class="animate-fade-in-up"> <h1 class="text-3xl font-bold mb-2">Post new work</h1> <p class="text-neutral-500 mb-8">Share your latest creation with the community.</p> </div> <form id="upload-form" class="space-y-6 animate-fade-in-up delay-100"> <div class="group"> <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Project Title</label> <input type="text" id="title" class="input-field w-full" placeholder="e.g. Neon Horizon" required> </div> <div class="group"> <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Category</label> <div class="relative"> <select id="category" class="input-field w-full appearance-none cursor-pointer" required> <option value="" disabled selected>Select a category...</option> <option value="Web Design">Web Design</option> <option value="Mobile Apps">Mobile Apps</option> <option value="Illustration">Illustration</option> <option value="AI Art">AI Art</option> <option value="Branding">Branding</option> <option value="3D Motion">3D Motion</option> <option value="Photography">Photography</option> <option value="Other">Other</option> </select> <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-neutral-500"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg> </div> </div> </div> <div class="group"> <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Description</label> <textarea id="description" rows="4" class="input-field w-full resize-none" placeholder="Share your process, tools used, or inspiration..." required></textarea> </div> <div> <label class="block text-xs font-bold uppercase text-neutral-500 mb-2">Media (Multiple Files Supported)</label> <div class="relative group cursor-pointer"> <input type="file" id="file-input" accept="image/*,video/*" multiple class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"> <div id="drop-zone" class="w-full min-h-[200px] rounded-xl bg-neutral-50 dark:bg-neutral-800 border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center transition-all group-hover:border-neutral-900 dark:group-hover:border-white overflow-hidden relative"> <div id="upload-placeholder" class="text-center p-6"> <svg class="w-12 h-12 mx-auto mb-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path> </svg> <p class="text-sm font-medium">Click to upload images or videos</p> <p class="text-xs text-neutral-400 mt-1">Select multiple files • Max 10MB each</p> </div> <!-- Multiple File Previews --> <div id="file-previews" class="hidden w-full p-4"> <div class="grid grid-cols-2 gap-3" id="preview-grid"> <!-- File previews will be inserted here --> </div> <button type="button" id="add-more-files" class="mt-3 w-full py-2 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg text-sm text-neutral-500 hover:border-neutral-400 transition-colors">
++ Add More Files
+</button> </div> </div> </div> </div> <button type="submit" id="submit-btn" class="btn-primary w-full h-12 flex items-center justify-center gap-2"> <span id="btn-text">Publish Project</span> <span id="btn-spinner" class="hidden animate-spin">⟳</span> </button> <p id="error-msg" class="text-red-500 text-sm text-center hidden mt-4"></p> </form> </div> ` })} ${renderScript($$result, "/Users/nikhilsingh/Documents/websites/wipp/src/pages/post.astro?astro&type=script&index=0&lang.ts")}`;
+}, "/Users/nikhilsingh/Documents/websites/wipp/src/pages/post.astro", void 0);
+
+const $$file = "/Users/nikhilsingh/Documents/websites/wipp/src/pages/post.astro";
+const $$url = "/post";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Post,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

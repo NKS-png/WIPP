@@ -1,0 +1,230 @@
+---
+// Component for unlocking encryption keys
+---
+
+<div id="unlock-keys-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+  <div class="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-2xl p-6 animate-fade-in-up">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-3a1 1 0 011-1h2.586l6.414-6.414a6 6 0 015.743-7.743z" />
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-neutral-900 dark:text-white mb-2">Unlock Your Keys</h2>
+      <p class="text-sm text-neutral-600 dark:text-neutral-400">Enter your encryption password to read encrypted messages</p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          Encryption Password:
+        </label>
+        <input
+          type="password"
+          id="unlock-password"
+          placeholder="Enter your encryption password..."
+          class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <div id="unlock-error" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="unlock-error-text" class="text-sm text-red-700 dark:text-red-300"></span>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button id="cancel-unlock-btn" class="flex-1 px-4 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+          Cancel
+        </button>
+        <button id="unlock-keys-btn" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Unlock Keys
+        </button>
+      </div>
+    </div>
+
+    <div id="unlock-loading" class="hidden text-center space-y-4">
+      <div class="animate-spin w-12 h-12 border-4 border-neutral-200 border-t-blue-500 rounded-full mx-auto"></div>
+      <div>
+        <h3 class="font-medium text-neutral-900 dark:text-white mb-2">Unlocking keys...</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">Decrypting your private key</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Import modules
+  let keyManager = null;
+  let supabase = null;
+  
+  // Initialize modules
+  async function initializeModules() {
+    try {
+      const keyManagerModule = await import('../lib/keyManager.js');
+      keyManager = keyManagerModule.keyManager;
+    } catch (error) {
+      console.error('Failed to load keyManager:', error);
+      return false;
+    }
+    
+    try {
+      const supabaseModule = await import('../lib/supabase.ts');
+      supabase = supabaseModule.supabase;
+    } catch (error) {
+      console.error('Failed to load supabase:', error);
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Initialize modules and start the app
+  initializeModules().then((success) => {
+    if (!success) {
+      console.error('Failed to initialize required modules');
+      return;
+    }
+    
+    // Initialize the unlock keys interface
+    initializeUnlockKeys();
+  });
+
+  function initializeUnlockKeys() {
+
+  const modal = document.getElementById('unlock-keys-modal');
+  const passwordInput = document.getElementById('unlock-password');
+  const unlockBtn = document.getElementById('unlock-keys-btn');
+  const cancelBtn = document.getElementById('cancel-unlock-btn');
+  const unlockError = document.getElementById('unlock-error');
+  const unlockErrorText = document.getElementById('unlock-error-text');
+  const unlockLoading = document.getElementById('unlock-loading');
+  const mainContent = modal.querySelector('.space-y-4');
+
+  // Show unlock modal
+  window.showUnlockKeys = () => {
+    modal.classList.remove('hidden');
+    passwordInput.focus();
+  };
+
+  // Hide unlock modal
+  function hideModal() {
+    modal.classList.add('hidden');
+    passwordInput.value = '';
+    unlockError.classList.add('hidden');
+    unlockLoading.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+  }
+
+  // Cancel unlock
+  cancelBtn?.addEventListener('click', hideModal);
+
+  // Unlock keys
+  unlockBtn?.addEventListener('click', async () => {
+    const password = passwordInput.value.trim();
+    
+    if (!password) {
+      showError('Please enter your encryption password');
+      return;
+    }
+
+    // Show loading state
+    mainContent.classList.add('hidden');
+    unlockLoading.classList.remove('hidden');
+
+    try {
+      if (!supabase) {
+        throw new Error('Supabase not available');
+      }
+      
+      // Get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Unlock keys
+      await keyManager.unlockKeys(session.user.id, password);
+      
+      // Success - hide modal and refresh page to decrypt messages
+      hideModal();
+      
+      if (window.showNotification) {
+        window.showNotification('Encryption keys unlocked successfully!', 'success', 3000);
+      }
+      
+      // Refresh current page to decrypt messages
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error unlocking keys:', error);
+      
+      // Show error state
+      unlockLoading.classList.add('hidden');
+      mainContent.classList.remove('hidden');
+      showError(error.message || 'Failed to unlock keys');
+    }
+  });
+
+  // Show error
+  function showError(message) {
+    unlockErrorText.textContent = message;
+    unlockError.classList.remove('hidden');
+  }
+
+  // Handle enter key
+  passwordInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      unlockBtn.click();
+    }
+  });
+
+  // Auto-show unlock modal for users with encrypted messages (if encryption is available)
+  window.addEventListener('load', async () => {
+    try {
+      if (!supabase || !keyManager) return;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      // Check if user has encryption keys but they're not unlocked
+      const hasKeys = await keyManager.hasEncryptionKeys(session.user.id);
+      
+      if (hasKeys && !keyManager.isUnlocked) {
+        // Check if there are encrypted messages on the current page
+        const encryptedMessages = document.querySelectorAll('[data-encrypted="true"]');
+        
+        if (encryptedMessages.length > 0) {
+          // Show unlock modal after a short delay
+          setTimeout(() => {
+            window.showUnlockKeys();
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking encryption status:', error);
+    }
+  });
+  } // End of initializeUnlockKeys function
+</script>
+
+<style>
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+</style>

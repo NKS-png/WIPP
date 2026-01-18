@@ -33,9 +33,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response('File must be an image', { status: 400 });
     }
 
-    // Validate file size (5MB max)
-    if (imageFile.size > 5 * 1024 * 1024) {
-      return new Response('Image must be less than 5MB', { status: 400 });
+    // Validate file size (2MB max for better bandwidth protection)
+    if (imageFile.size > 2 * 1024 * 1024) {
+      return new Response('Max 2MB', { status: 400 });
     }
 
     // Generate unique filename

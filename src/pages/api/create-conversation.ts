@@ -8,7 +8,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const refreshToken = cookies.get('sb-refresh-token')?.value;
 
     if (!accessToken || !refreshToken) {
-      return new Response('Not authenticated', { status: 401 });
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const { data: sessionData } = await supabase.auth.setSession({
@@ -17,19 +20,28 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (!sessionData.session) {
-      return new Response('Invalid session', { status: 401 });
+      return new Response(JSON.stringify({ error: 'Invalid session' }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    const { target_user_id } = await request.json();
+    const { target_user_id, initial_message, encrypted_initial_message } = await request.json();
 
     if (!target_user_id) {
-      return new Response('Missing target_user_id', { status: 400 });
+      return new Response(JSON.stringify({ error: 'Missing target_user_id' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const currentUserId = sessionData.session.user.id;
 
     if (currentUserId === target_user_id) {
-      return new Response('Cannot create conversation with yourself', { status: 400 });
+      return new Response(JSON.stringify({ error: 'Cannot create conversation with yourself' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Check if conversation already exists - simplified query
@@ -41,9 +53,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     console.log('Existing participants:', existingParticipants);
 
     // Find shared conversation
-    let sharedConversationId = null;
+    let sharedConversationId: string | null = null;
     if (existingParticipants && existingParticipants.length > 0) {
-      const conversationCounts = {};
+      const conversationCounts: Record<string, number> = {};
       existingParticipants.forEach(p => {
         conversationCounts[p.conversation_id] = (conversationCounts[p.conversation_id] || 0) + 1;
       });
@@ -79,7 +91,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (conversationError) {
       console.error('Error creating conversation:', conversationError);
-      return new Response('Failed to create conversation', { status: 500 });
+      
+      // Check if this is a RLS/permissions error that might indicate encryption setup is required
+      if (conversationError.code === '42501' || conversationError.message?.includes('permission') || conversationError.message?.includes('policy')) {
+        return new Response(JSON.stringify({ 
+          error: 'Encryption setup required',
+          details: 'Please set up encryption keys before starting conversations. Visit /encryption-status to check your setup.',
+          requiresEncryption: true
+        }), { 
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
+      return new Response(JSON.stringify({ 
+        error: 'Failed to create conversation',
+        details: conversationError.message 
+      }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     console.log('Created new conversation:', newConversation.id);
@@ -94,9 +125,30 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (participantsError) {
       console.error('Error adding participants:', participantsError);
+      
+      // Check if this is a RLS/permissions error
+      if (participantsError.code === '42501' || participantsError.message?.includes('permission') || participantsError.message?.includes('policy')) {
+        // Clean up the conversation
+        await supabase.from('conversations').delete().eq('id', newConversation.id);
+        return new Response(JSON.stringify({ 
+          error: 'Encryption setup required',
+          details: 'Please set up encryption keys before starting conversations. Visit /encryption-status to check your setup.',
+          requiresEncryption: true
+        }), { 
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
       // Clean up the conversation if participants failed
       await supabase.from('conversations').delete().eq('id', newConversation.id);
-      return new Response('Failed to add conversation participants', { status: 500 });
+      return new Response(JSON.stringify({ 
+        error: 'Failed to add conversation participants',
+        details: participantsError.message 
+      }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     console.log('Added participants to conversation');
@@ -113,7 +165,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       console.error('Participant verification failed');
       // Clean up the conversation if participants failed
       await supabase.from('conversations').delete().eq('id', newConversation.id);
-      return new Response('Failed to verify conversation participants', { status: 500 });
+      return new Response(JSON.stringify({ 
+        error: 'Failed to verify conversation participants',
+        details: `Expected 2 participants, got ${verifyParticipants?.length || 0}` 
+      }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     return new Response(JSON.stringify({ 
@@ -126,6 +184,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   } catch (error) {
     console.error('Create conversation API error:', error);
-    return new Response('Internal server error', { status: 500 });
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error.message 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 };

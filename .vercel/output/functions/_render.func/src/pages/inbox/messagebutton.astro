@@ -1,0 +1,90 @@
+---
+// src/components/MessageButton.astro
+interface Props {
+  userId: string;
+  username?: string;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary';
+}
+
+const { userId, username, size = 'md', variant = 'secondary' } = Astro.props;
+
+const sizeClasses = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-2.5 text-base',
+  lg: 'px-8 py-3 text-lg'
+};
+
+const variantClasses = {
+  primary: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg',
+  secondary: 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800'
+};
+---
+
+<button
+  data-message-user-id={userId}
+  data-username={username}
+  class={`message-btn ${sizeClasses[size]} ${variantClasses[variant]} rounded-full font-semibold transition-all flex items-center gap-2`}
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+  <span>Message</span>
+</button>
+
+<script>
+  // Handle message button clicks
+  document.addEventListener('click', async (e) => {
+    const button = (e.target as HTMLElement).closest('.message-btn');
+    if (!button) return;
+
+    e.preventDefault();
+    
+    const targetUserId = button.getAttribute('data-message-user-id');
+    const username = button.getAttribute('data-username');
+
+    if (!targetUserId) return;
+
+    // Show loading state
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<span class="animate-spin inline-block">⟳</span> Starting...';
+    (button as HTMLButtonElement).disabled = true;
+
+    try {
+      // Call API to start/get conversation
+      const response = await fetch('/api/conversations/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ targetUserId })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.conversationId) {
+        // Redirect to conversation
+        window.location.href = `/inbox/${data.conversationId}`;
+      } else {
+        throw new Error(data.error || 'Failed to start conversation');
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      alert('Failed to start conversation. Please try again.');
+      
+      // Restore button
+      button.innerHTML = originalContent;
+      (button as HTMLButtonElement).disabled = false;
+    }
+  });
+</script>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+</style>

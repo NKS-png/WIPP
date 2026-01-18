@@ -1,0 +1,824 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+// Get session from cookies
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+let currentUser = null;
+if (accessToken && refreshToken) {
+  const { data } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  currentUser = data.session?.user;
+}
+
+// Redirect if not logged in
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+// Get conversations using simplified approach
+const { data: myParticipations } = await supabase
+  .from('conversation_participants')
+  .select('conversation_id')
+  .eq('user_id', currentUser.id);
+
+console.log('My participations:', myParticipations);
+
+let conversationDetails = [];
+
+if (myParticipations && myParticipations.length > 0) {
+  const conversationIds = myParticipations.map(p => p.conversation_id);
+  
+  // Get conversation details
+  const { data: conversations } = await supabase
+    .from('conversations')
+    .select('*')
+    .in('id', conversationIds)
+    .order('updated_at', { ascending: false });
+
+  console.log('Conversations:', conversations);
+
+  // Get unread counts per conversation (optional - fallback if function doesn't exist)
+  let unreadCounts = null;
+  try {
+    const { data } = await supabase.rpc('get_conversation_unread_counts', {
+      p_user_id: currentUser.id
+    });
+    unreadCounts = data;
+    console.log('Unread counts:', unreadCounts);
+  } catch (error) {
+    console.log('Unread counts function not available (message-read-tracking.sql not run):', error.message);
+    // Fallback: assume no unread counts
+    unreadCounts = [];
+  }
+
+  // Create a map for quick lookup
+  const unreadMap = new Map();
+  if (unreadCounts) {
+    unreadCounts.forEach(item => {
+      unreadMap.set(item.conversation_id, item.unread_count);
+    });
+  }
+
+  // Get details for each conversation
+  conversationDetails = await Promise.all(
+    (conversations || []).map(async (conv) => {
+      // First, check if this conversation has any messages
+      const { count: messageCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_id', conv.id);
+
+      // Skip conversations with no messages
+      if (!messageCount || messageCount === 0) {
+        return null;
+      }
+
+      // Get other participant
+      const { data: otherParticipants } = await supabase
+        .from('conversation_participants')
+        .select('user_id')
+        .eq('conversation_id', conv.id)
+        .neq('user_id', currentUser.id);
+
+      let partner = null;
+      if (otherParticipants && otherParticipants.length > 0) {
+        const { data: partnerProfile } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .eq('id', otherParticipants[0].user_id)
+          .single();
+        partner = partnerProfile;
+      }
+
+      // Get last message
+      const { data: lastMessage } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      // Get unread count from our map
+      const unreadCount = unreadMap.get(conv.id) || 0;
+
+      return {
+        id: conv.id,
+        partner: partner,
+        lastMessage: lastMessage,
+        unreadCount: parseInt(unreadCount),
+        updatedAt: conv.updated_at || conv.created_at,
+        messageCount: messageCount
+      };
+    })
+  );
+
+  // Filter out null results (conversations with no messages) and conversations without valid partners
+  conversationDetails = conversationDetails.filter(c => c !== null && c.partner);
+}
+
+// Filter conversations and sort by most recent
+const sortedConversations = conversationDetails
+  .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+console.log('Final conversations (with messages only):', sortedConversations);
+---
+
+<BaseLayout title="Inbox">
+  <div class="min-h-screen bg-neutral-50 dark:bg-black">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+      
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-neutral-900 dark:text-white mb-2">
+          Messages
+        </h1>
+        <p class="text-neutral-500 dark:text-neutral-400">
+          {sortedConversations.length} conversation{sortedConversations.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="mb-6 flex items-center gap-4">
+        <div class="flex-1 relative">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search conversations..."
+            class="w-full px-5 py-3 pl-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-white placeholder-neutral-400"
+          />
+          <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        
+        <button 
+          onclick="window.location.reload()" 
+          class="px-5 py-3 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-2xl font-semibold hover:bg-neutral-300 dark:hover:bg-neutral-700 transition flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="hidden md:inline">Refresh</span>
+        </button>
+        
+        <button 
+          id="new-message-btn"
+          class="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-semibold hover:shadow-lg transition flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="hidden md:inline">New Message</span>
+        </button>
+      </div>
+
+      <!-- Conversations List -->
+      <div class="space-y-3" id="conversations-list">
+        {sortedConversations.length > 0 ? (
+          sortedConversations.map((conv) => {
+            const partner = conv.partner;
+            const displayName = partner?.full_name || partner?.username || 'Unknown User';
+            const displayAvatar = partner?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`;
+            const lastMsg = conv.lastMessage;
+            const isUnread = conv.unreadCount > 0;
+            const isSentByMe = lastMsg?.sender_id === currentUser.id;
+
+            return (
+              <a
+                href={`/inbox/${conv.id}`}
+                class="block bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 hover:border-purple-500 dark:hover:border-purple-400 transition-all hover:shadow-lg conversation-item"
+                data-conversation-id={conv.id}
+              >
+                <div class="flex items-center gap-4">
+                  <!-- Avatar -->
+                  <div class="relative flex-shrink-0">
+                    <img
+                      src={displayAvatar}
+                      alt={displayName}
+                      class="w-14 h-14 rounded-full object-cover border-2 border-neutral-100 dark:border-neutral-800"
+                    />
+                    {isUnread && (
+                      <div class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 border-2 border-white dark:border-neutral-900 rounded-full flex items-center justify-center notification-dot">
+                        <span class="text-white text-xs font-bold">{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                      <h3 class={`font-bold text-neutral-900 dark:text-white truncate ${isUnread ? 'text-lg' : 'text-base'}`}>
+                        {displayName}
+                      </h3>
+                      {lastMsg && (
+                        <span class="text-xs text-neutral-400 dark:text-neutral-500 flex-shrink-0 ml-2">
+                          {new Date(lastMsg.created_at).toLocaleDateString() === new Date().toLocaleDateString()
+                            ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : new Date(lastMsg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })
+                          }
+                        </span>
+                      )}
+                    </div>
+                    
+                    {lastMsg ? (
+                      <p class={`text-sm truncate ${isUnread ? 'text-neutral-900 dark:text-white font-semibold' : 'text-neutral-500 dark:text-neutral-400'}`}>
+                        {isSentByMe && <span class="text-neutral-400 mr-1">You:</span>}
+                        {lastMsg.content}
+                      </p>
+                    ) : (
+                      <p class="text-sm text-neutral-400 italic">No messages yet</p>
+                    )}
+                  </div>
+
+                  <!-- Arrow Icon -->
+                  <svg class="w-5 h-5 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </a>
+            );
+          })
+        ) : (
+          <!-- Empty State -->
+          <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-16 text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
+              No messages yet
+            </h3>
+            <p class="text-neutral-500 dark:text-neutral-400 mb-6 max-w-md mx-auto">
+              Start a conversation by visiting a user's profile and clicking "Message"
+            </p>
+            <a
+              href="/explore"
+              class="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg transition"
+            >
+              Explore Wipp
+            </a>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- New Message Modal -->
+  <div id="new-message-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-2xl p-6 animate-fade-in-up">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-neutral-900 dark:text-white">New Message</h2>
+        <button id="close-modal-btn" class="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+          <svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- User Search -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Send to:</label>
+        <div class="relative">
+          <input
+            type="text"
+            id="user-search-input"
+            placeholder="Search users..."
+            class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            autocomplete="off"
+          />
+          
+          <!-- Search Results -->
+          <div id="user-search-results" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10">
+            <div id="user-search-loading" class="hidden p-4 text-center text-neutral-500">
+              <div class="animate-spin w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full mx-auto mb-2"></div>
+              Searching...
+            </div>
+            <div id="user-search-empty" class="hidden p-4 text-center text-neutral-500 text-sm">
+              No users found
+            </div>
+            <div id="user-search-list" class="py-2">
+              <!-- Search results will be inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected User -->
+      <div id="selected-user" class="hidden mb-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+        <div class="flex items-center gap-3">
+          <img id="selected-user-avatar" class="w-10 h-10 rounded-full object-cover" />
+          <div class="flex-1">
+            <div id="selected-user-name" class="font-medium text-neutral-900 dark:text-white"></div>
+            <div id="selected-user-username" class="text-sm text-neutral-500"></div>
+          </div>
+          <button id="remove-selected-user" class="p-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+            <svg class="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Message:</label>
+        <textarea
+          id="message-input"
+          rows="4"
+          placeholder="Type your message..."
+          class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+          required
+        ></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3">
+        <button id="cancel-message-btn" class="flex-1 px-4 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+          Cancel
+        </button>
+        <button id="send-message-btn" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Send Message
+        </button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Import modules
+  let supabase = null;
+  let keyManager = null;
+  
+  // Initialize modules
+  async function initializeModules() {
+    try {
+      const supabaseModule = await import('../../lib/supabase.ts');
+      supabase = supabaseModule.supabase;
+    } catch (error) {
+      console.error('Failed to load supabase:', error);
+      return false;
+    }
+    
+    try {
+      const keyManagerModule = await import('../../lib/keyManager.js');
+      keyManager = keyManagerModule.keyManager;
+    } catch (error) {
+      console.log('Encryption not available:', error.message);
+    }
+    
+    return true;
+  }
+
+  // Initialize modules and start the app
+  initializeModules().then((success) => {
+    if (!success) {
+      console.error('Failed to initialize required modules');
+      // Still try to initialize basic functionality
+      initializeInboxBasic();
+      return;
+    }
+    
+    // Initialize the inbox interface
+    initializeInbox();
+  });
+
+  // Basic inbox functionality without encryption
+  function initializeInboxBasic() {
+    console.log('Initializing basic inbox functionality...');
+    
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    const conversationItems = document.querySelectorAll('.conversation-item');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        
+        conversationItems.forEach((item) => {
+          const text = item.textContent?.toLowerCase() || '';
+          if (text.includes(query)) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Basic new message modal (simplified)
+    const newMessageBtn = document.getElementById('new-message-btn');
+    const newMessageModal = document.getElementById('new-message-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelMessageBtn = document.getElementById('cancel-message-btn');
+
+    // Open modal
+    newMessageBtn?.addEventListener('click', () => {
+      newMessageModal.classList.remove('hidden');
+    });
+
+    // Close modal
+    function closeModal() {
+      newMessageModal.classList.add('hidden');
+    }
+
+    closeModalBtn?.addEventListener('click', closeModal);
+    cancelMessageBtn?.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    newMessageModal?.addEventListener('click', (e) => {
+      if (e.target === newMessageModal) {
+        closeModal();
+      }
+    });
+  }
+
+  function initializeInbox() {
+
+  // Search functionality
+  const searchInput = document.getElementById('search-input');
+  const conversationItems = document.querySelectorAll('.conversation-item');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      
+      conversationItems.forEach((item) => {
+        const text = item.textContent?.toLowerCase() || '';
+        if (text.includes(query)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Notification sound function
+  function playNotificationSound() {
+    try {
+      // Create a subtle notification sound
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+    }
+  }
+
+  // Real-time updates for new messages and read status
+  let lastMessageCount = conversationItems.length;
+  
+  async function updateUnreadCounts() {
+    try {
+      const response = await fetch('/api/conversation-unread-counts');
+      if (response.ok) {
+        const { counts } = await response.json();
+        
+        // Update unread badges for each conversation
+        conversationItems.forEach(item => {
+          const conversationId = item.getAttribute('data-conversation-id');
+          const badge = item.querySelector('.notification-dot');
+          const unreadCount = counts[conversationId] || 0;
+          
+          if (unreadCount > 0) {
+            if (badge) {
+              badge.textContent = unreadCount > 99 ? '99+' : unreadCount.toString();
+              badge.classList.remove('hidden');
+            }
+          } else {
+            if (badge) {
+              badge.classList.add('hidden');
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.log('Error updating unread counts:', error);
+    }
+  }
+
+  async function checkForNewMessages() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Get current conversations count
+      const { data: participations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', session.user.id);
+
+      if (!participations) return;
+
+      const conversationIds = participations.map(p => p.conversation_id);
+      
+      // Check for new messages in the last 30 seconds
+      const { data: recentMessages } = await supabase
+        .from('messages')
+        .select('conversation_id, sender_id, created_at')
+        .in('conversation_id', conversationIds)
+        .neq('sender_id', session.user.id)
+        .gte('created_at', new Date(Date.now() - 30000).toISOString())
+        .order('created_at', { ascending: false });
+
+      if (recentMessages && recentMessages.length > 0) {
+        // Play sound for new messages
+        const lastCheck = localStorage.getItem('lastInboxCheck');
+        const currentTime = Date.now();
+        
+        if (!lastCheck || (currentTime - parseInt(lastCheck)) > 30000) {
+          playNotificationSound();
+        }
+        
+        localStorage.setItem('lastInboxCheck', currentTime.toString());
+        
+        // Update unread counts instead of full refresh
+        updateUnreadCounts();
+        
+        // Only refresh if there are significantly new messages
+        setTimeout(() => {
+          if (document.visibilityState === 'visible') {
+            window.location.reload();
+          }
+        }, 5000);
+      }
+    } catch (error) {
+      console.log('Error checking for new messages:', error);
+    }
+  }
+
+  // Update unread counts every 10 seconds
+  setInterval(updateUnreadCounts, 10000);
+
+  // Check for new messages every 15 seconds
+  setInterval(checkForNewMessages, 15000);
+
+  // Real-time subscription for immediate updates
+  supabase
+    .channel('inbox_updates')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages'
+    }, (payload) => {
+      console.log('New message received:', payload);
+      playNotificationSound();
+      
+      // Show a subtle notification
+      showNewMessageNotification();
+      
+      // Update unread counts
+      updateUnreadCounts();
+      
+      // Refresh after a longer delay to allow for read status updates
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          window.location.reload();
+        }
+      }, 3000);
+    })
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'message_reads'
+    }, (payload) => {
+      console.log('Message read status updated:', payload);
+      // Update unread counts when messages are marked as read
+      updateUnreadCounts();
+    })
+    .subscribe();
+
+  // Show new message notification
+  function showNewMessageNotification() {
+    if (window.showNotification) {
+      window.showNotification('New message received!', 'success', 3000);
+    }
+  }
+
+  console.log('Inbox loaded with', conversationItems.length, 'conversations');
+
+  // --- NEW MESSAGE MODAL FUNCTIONALITY ---
+  const newMessageBtn = document.getElementById('new-message-btn');
+  const newMessageModal = document.getElementById('new-message-modal');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const cancelMessageBtn = document.getElementById('cancel-message-btn');
+  const userSearchInput = document.getElementById('user-search-input');
+  const userSearchResults = document.getElementById('user-search-results');
+  const userSearchLoading = document.getElementById('user-search-loading');
+  const userSearchEmpty = document.getElementById('user-search-empty');
+  const userSearchList = document.getElementById('user-search-list');
+  const selectedUser = document.getElementById('selected-user');
+  const selectedUserAvatar = document.getElementById('selected-user-avatar');
+  const selectedUserName = document.getElementById('selected-user-name');
+  const selectedUserUsername = document.getElementById('selected-user-username');
+  const removeSelectedUserBtn = document.getElementById('remove-selected-user');
+  const messageInput = document.getElementById('message-input');
+  const sendMessageBtn = document.getElementById('send-message-btn');
+
+  let selectedUserId = null;
+  let userSearchTimeout;
+
+  // Open modal
+  newMessageBtn?.addEventListener('click', () => {
+    newMessageModal.classList.remove('hidden');
+    userSearchInput.focus();
+  });
+
+  // Close modal
+  function closeModal() {
+    newMessageModal.classList.add('hidden');
+    resetModal();
+  }
+
+  closeModalBtn?.addEventListener('click', closeModal);
+  cancelMessageBtn?.addEventListener('click', closeModal);
+
+  // Reset modal state
+  function resetModal() {
+    userSearchInput.value = '';
+    messageInput.value = '';
+    selectedUserId = null;
+    selectedUser.classList.add('hidden');
+    userSearchResults.classList.add('hidden');
+    userSearchList.innerHTML = '';
+  }
+
+  // User search functionality
+  userSearchInput?.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    
+    clearTimeout(userSearchTimeout);
+    
+    if (query.length < 2) {
+      userSearchResults.classList.add('hidden');
+      return;
+    }
+    
+    userSearchTimeout = setTimeout(() => {
+      performUserSearch(query);
+    }, 300);
+  });
+
+  async function performUserSearch(query) {
+    userSearchResults.classList.remove('hidden');
+    userSearchLoading.classList.remove('hidden');
+    userSearchEmpty.classList.add('hidden');
+    userSearchList.innerHTML = '';
+
+    try {
+      const response = await fetch(`/api/search-users?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      userSearchLoading.classList.add('hidden');
+
+      if (data.users && data.users.length > 0) {
+        userSearchEmpty.classList.add('hidden');
+        
+        data.users.forEach(user => {
+          const userItem = document.createElement('button');
+          userItem.type = 'button';
+          userItem.className = 'w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-left';
+          userItem.innerHTML = `
+            <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-full object-cover" />
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-neutral-900 dark:text-white truncate">${user.displayName}</div>
+              <div class="text-xs text-neutral-500 truncate">@${user.username}</div>
+            </div>
+          `;
+          
+          userItem.addEventListener('click', () => {
+            selectUser(user);
+          });
+          
+          userSearchList.appendChild(userItem);
+        });
+      } else {
+        userSearchEmpty.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('User search error:', error);
+      userSearchLoading.classList.add('hidden');
+      userSearchEmpty.classList.remove('hidden');
+      userSearchEmpty.textContent = 'Search failed. Please try again.';
+    }
+  }
+
+  // Select user
+  function selectUser(user) {
+    selectedUserId = user.id;
+    selectedUserAvatar.src = user.avatar;
+    selectedUserName.textContent = user.displayName;
+    selectedUserUsername.textContent = `@${user.username}`;
+    
+    selectedUser.classList.remove('hidden');
+    userSearchResults.classList.add('hidden');
+    userSearchInput.value = '';
+    messageInput.focus();
+  }
+
+  // Remove selected user
+  removeSelectedUserBtn?.addEventListener('click', () => {
+    selectedUserId = null;
+    selectedUser.classList.add('hidden');
+    userSearchInput.focus();
+  });
+
+  // Send message
+  sendMessageBtn?.addEventListener('click', async () => {
+    if (!selectedUserId || !messageInput.value.trim()) {
+      alert('Please select a user and enter a message.');
+      return;
+    }
+
+    sendMessageBtn.disabled = true;
+    sendMessageBtn.textContent = 'Sending...';
+
+    try {
+      // Create conversation
+      const response = await fetch('/api/create-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          target_user_id: selectedUserId,
+          initial_message: messageInput.value.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to the new conversation
+        window.location.href = `/inbox/${data.conversation_id}`;
+      } else {
+        throw new Error(data.error || 'Failed to create conversation');
+      }
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      alert('Failed to send message: ' + error.message);
+      
+      sendMessageBtn.disabled = false;
+      sendMessageBtn.textContent = 'Send Message';
+    }
+  });
+
+  // Close modal when clicking outside
+  newMessageModal?.addEventListener('click', (e) => {
+    if (e.target === newMessageModal) {
+      closeModal();
+    }
+  });
+  } // End of initializeInbox function
+</script>
+
+<style>
+  /* Smooth animations */
+  .conversation-item {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Stagger animation */
+  .conversation-item:nth-child(1) { animation-delay: 0s; }
+  .conversation-item:nth-child(2) { animation-delay: 0.05s; }
+  .conversation-item:nth-child(3) { animation-delay: 0.1s; }
+  .conversation-item:nth-child(4) { animation-delay: 0.15s; }
+  .conversation-item:nth-child(5) { animation-delay: 0.2s; }
+
+  /* Modal animation */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.2s ease-out forwards;
+  }
+</style>

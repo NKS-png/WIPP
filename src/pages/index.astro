@@ -43,42 +43,44 @@ const categories = [
 <BaseLayout title="Home">
   
   <section class="relative bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
-    <div class="max-w-5xl mx-auto px-6 py-20 text-center animate-fade-in-up">
-      <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-neutral-900 dark:text-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center animate-fade-in-up">
+      <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-neutral-900 dark:text-white">
         Less <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">noise.</span> More art.
       </h1>
-      <p class="text-neutral-500 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+      <p class="text-neutral-500 text-base sm:text-lg max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed px-4">
         The community-first platform for artists to share work, get real feedback, and grow without algorithms.
       </p>
       
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/explore" class="btn-primary px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+        <a href="/explore" class="btn-primary px-6 sm:px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm sm:text-base">
           Explore Feed
         </a>
-        <a href="/communities" class="px-8 py-3 rounded-full border border-neutral-200 dark:border-neutral-700 font-medium text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+        <a href="/communities" class="px-6 sm:px-8 py-3 rounded-full border border-neutral-200 dark:border-neutral-700 font-medium text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-sm sm:text-base">
           Join a Community
         </a>
       </div>
     </div>
   </section>
 
-  <div class="sticky top-16 z-30 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-100 dark:border-neutral-800">
-    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center gap-3 overflow-x-auto no-scrollbar">
-      {categories.map((cat, index) => (
-        <a href={`/explore?category=${cat}`} class={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${index === 0 ? 'bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}>
-          {cat}
-        </a>
-      ))}
+  <div class="sticky md:top-24 top-20 z-30 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-100 dark:border-neutral-800">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+        {categories.map((cat, index) => (
+          <a href={`/explore?category=${cat}`} class={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all transform hover:scale-105 active:scale-95 ${index === 0 ? 'bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md' : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'}`}>
+            {cat}
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-4 gap-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-12">
     
-    <div class="lg:col-span-3 space-y-8 animate-fade-in-up delay-100">
+    <div class="lg:col-span-3 space-y-6 sm:space-y-8 animate-fade-in-up delay-100">
       
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-          <span class="text-2xl">🔥</span> Trending Projects
+        <h2 class="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+          <span class="text-xl sm:text-2xl">🔥</span> Trending Projects
         </h2>
         <div class="flex gap-2 text-sm font-medium text-neutral-500">
            <a href="/explore" class="hover:text-black dark:hover:text-white transition-colors">View All &rarr;</a>
@@ -86,19 +88,19 @@ const categories = [
       </div>
 
       {projects && projects.length > 0 ? (
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
           {projects.map((project) => (
             <ProjectCard project={project} />
           ))}
         </div>
       ) : (
-        <div class="text-center py-20 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
-          <p class="text-neutral-500">No projects yet. Be the first to post!</p>
-          <a href="/post" class="text-blue-600 font-bold hover:underline mt-2 inline-block">Create Project &rarr;</a>
+        <div class="text-center py-16 sm:py-20 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
+          <p class="text-neutral-500 mb-2">No projects yet. Be the first to post!</p>
+          <a href="/post" class="text-blue-600 font-bold hover:underline mt-2 inline-block text-sm">Create Project &rarr;</a>
         </div>
       )}
       
-      <div class="text-center pt-8 border-t border-neutral-100 dark:border-neutral-800">
+      <div class="text-center pt-6 sm:pt-8 border-t border-neutral-100 dark:border-neutral-800">
         <a href="/explore" class="btn-secondary inline-flex items-center gap-2 px-6 py-2 rounded-full text-sm">
           Load more
         </a>

@@ -94,6 +94,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (error) {
       console.error('Database error:', error);
+      
+      // Check if this is a RLS/permissions error that might indicate encryption setup is required
+      if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+        return new Response(JSON.stringify({ 
+          error: 'Encryption setup required',
+          details: 'Please set up encryption keys before sending messages. Visit /encryption-status to check your setup.',
+          requiresEncryption: true
+        }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
       return new Response(JSON.stringify({ error: 'Failed to send message: ' + error.message }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -108,7 +121,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversation_id);
 
-    return new Response(JSON.stringify({ success: true, data }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: data[0],  // Return the first message object
+      data: data 
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

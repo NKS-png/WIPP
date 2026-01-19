@@ -4,12 +4,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout title="About Wipp">
   
-  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
-
   <section class="relative min-h-[80vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20">
     
-    <div class="absolute inset-0 z-0 opacity-60 dark:opacity-80">
-      <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"></spline-viewer>
+    <!-- Animated Gradient Background -->
+    <div class="absolute inset-0 z-0">
+      <div class="gradient-bg"></div>
+    </div>
+    
+    <!-- Floating Text Tiles Background -->
+    <div class="absolute inset-0 z-0 opacity-30 dark:opacity-20">
+      <div class="floating-tiles-container">
+        <div class="floating-tile" data-text="CREATE">CREATE</div>
+        <div class="floating-tile" data-text="SHARE">SHARE</div>
+        <div class="floating-tile" data-text="GROW">GROW</div>
+        <div class="floating-tile" data-text="CONNECT">CONNECT</div>
+        <div class="floating-tile" data-text="INSPIRE">INSPIRE</div>
+        <div class="floating-tile" data-text="LEARN">LEARN</div>
+        <div class="floating-tile" data-text="DISCOVER">DISCOVER</div>
+        <div class="floating-tile" data-text="FEEDBACK">FEEDBACK</div>
+        <div class="floating-tile" data-text="COMMUNITY">COMMUNITY</div>
+        <div class="floating-tile" data-text="ART">ART</div>
+        <div class="floating-tile" data-text="DESIGN">DESIGN</div>
+        <div class="floating-tile" data-text="CRAFT">CRAFT</div>
+      </div>
     </div>
     
     <div class="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 pointer-events-none">
@@ -38,19 +55,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </h2>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
-        <div class="p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500">
+        <div class="tilt-card p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500">
           <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-2xl mb-4">💬</div>
           <h3 class="text-lg sm:text-xl font-bold mb-2 dark:text-white">Real Feedback</h3>
           <p class="text-neutral-500 text-sm sm:text-base">Stop posting into the void. Get thoughtful critiques that actually help you grow.</p>
         </div>
         
-        <div class="p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500 delay-100">
+        <div class="tilt-card p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500 delay-100">
           <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-2xl mb-4">🚫</div>
           <h3 class="text-lg sm:text-xl font-bold mb-2 dark:text-white">No Algorithms</h3>
           <p class="text-neutral-500 text-sm sm:text-base">We don't sell your attention. No pay-to-win exposure. No follower farming.</p>
         </div>
         
-        <div class="p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500 delay-200">
+        <div class="tilt-card p-6 sm:p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:-translate-y-2 transition-transform duration-500 delay-200">
           <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-2xl mb-4">🌱</div>
           <h3 class="text-lg sm:text-xl font-bold mb-2 dark:text-white">Pure Growth</h3>
           <p class="text-neutral-500 text-sm sm:text-base">Inspired by Reddit's depth and Behance's visuals. Built for artists, not ads.</p>
@@ -187,4 +204,317 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     from { opacity: 0; }
     to { opacity: 1; }
   }
+
+  /* Floating Text Tiles */
+  .floating-tiles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .floating-tile {
+    position: absolute;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.1);
+    user-select: none;
+    pointer-events: none;
+    transform-style: preserve-3d;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: float 20s infinite linear;
+    letter-spacing: 0.1em;
+  }
+
+  .dark .floating-tile {
+    color: rgba(255, 255, 255, 0.1);
+  }
+
+  .floating-tile:hover {
+    color: rgba(99, 102, 241, 0.3);
+    transform: scale(1.1) rotateX(15deg) rotateY(15deg);
+  }
+
+  .dark .floating-tile:hover {
+    color: rgba(139, 92, 246, 0.3);
+  }
+
+  /* Individual tile positioning and animations */
+  .floating-tile:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+
+  .floating-tile:nth-child(2) {
+    top: 20%;
+    right: 15%;
+    animation-delay: -3s;
+    animation-duration: 30s;
+  }
+
+  .floating-tile:nth-child(3) {
+    top: 60%;
+    left: 5%;
+    animation-delay: -6s;
+    animation-duration: 22s;
+  }
+
+  .floating-tile:nth-child(4) {
+    top: 40%;
+    right: 10%;
+    animation-delay: -9s;
+    animation-duration: 28s;
+  }
+
+  .floating-tile:nth-child(5) {
+    top: 80%;
+    left: 20%;
+    animation-delay: -12s;
+    animation-duration: 26s;
+  }
+
+  .floating-tile:nth-child(6) {
+    top: 15%;
+    left: 50%;
+    animation-delay: -15s;
+    animation-duration: 24s;
+  }
+
+  .floating-tile:nth-child(7) {
+    top: 70%;
+    right: 25%;
+    animation-delay: -18s;
+    animation-duration: 32s;
+  }
+
+  .floating-tile:nth-child(8) {
+    top: 35%;
+    left: 30%;
+    animation-delay: -21s;
+    animation-duration: 27s;
+  }
+
+  .floating-tile:nth-child(9) {
+    top: 55%;
+    right: 40%;
+    animation-delay: -24s;
+    animation-duration: 29s;
+  }
+
+  .floating-tile:nth-child(10) {
+    top: 25%;
+    left: 70%;
+    animation-delay: -27s;
+    animation-duration: 23s;
+  }
+
+  .floating-tile:nth-child(11) {
+    top: 75%;
+    right: 5%;
+    animation-delay: -30s;
+    animation-duration: 31s;
+  }
+
+  .floating-tile:nth-child(12) {
+    top: 45%;
+    left: 80%;
+    animation-delay: -33s;
+    animation-duration: 25s;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.1;
+    }
+    25% {
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+      opacity: 0.2;
+    }
+    75% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: translateY(0px) rotate(360deg);
+      opacity: 0.1;
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .floating-tile {
+      font-size: 0.8rem;
+    }
+    
+    .floating-tiles-container {
+      opacity: 0.5;
+    }
+  }
+
+  /* Add subtle parallax effect */
+  .floating-tile:nth-child(odd) {
+    animation-direction: reverse;
+  }
+
+  .floating-tile:nth-child(3n) {
+    animation-timing-function: ease-in-out;
+  }
+
+  /* Tilt Cards */
+  .tilt-card {
+    transform-style: preserve-3d;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .tilt-card:hover {
+    transform: translateY(-8px) rotateX(5deg) rotateY(5deg);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  .dark .tilt-card:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Animated Gradient Background */
+  .gradient-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, 
+      rgba(99, 102, 241, 0.1) 0%, 
+      rgba(139, 92, 246, 0.1) 25%, 
+      rgba(59, 130, 246, 0.1) 50%, 
+      rgba(147, 51, 234, 0.1) 75%, 
+      rgba(99, 102, 241, 0.1) 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+
+  .dark .gradient-bg {
+    background: linear-gradient(45deg, 
+      rgba(99, 102, 241, 0.05) 0%, 
+      rgba(139, 92, 246, 0.05) 25%, 
+      rgba(59, 130, 246, 0.05) 50%, 
+      rgba(147, 51, 234, 0.05) 75%, 
+      rgba(99, 102, 241, 0.05) 100%);
+    background-size: 400% 400%;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 </style>
+
+<script>
+  // Add mouse interaction for tilt effect
+  document.addEventListener('DOMContentLoaded', function() {
+    const tiles = document.querySelectorAll('.floating-tile');
+    
+    // Add mouse move listener to the container
+    const container = document.querySelector('.floating-tiles-container');
+    
+    if (container) {
+      container.addEventListener('mousemove', function(e) {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        tiles.forEach((tile, index) => {
+          const tileRect = tile.getBoundingClientRect();
+          const tileCenterX = tileRect.left + tileRect.width / 2 - rect.left;
+          const tileCenterY = tileRect.top + tileRect.height / 2 - rect.top;
+          
+          const deltaX = x - tileCenterX;
+          const deltaY = y - tileCenterY;
+          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          
+          // Apply tilt effect based on mouse proximity
+          if (distance < 200) {
+            const intensity = (200 - distance) / 200;
+            const rotateX = (deltaY / 200) * 20 * intensity;
+            const rotateY = (deltaX / 200) * 20 * intensity;
+            const scale = 1 + intensity * 0.1;
+            
+            tile.style.transform = `scale(${scale}) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+            tile.style.color = `rgba(99, 102, 241, ${0.1 + intensity * 0.3})`;
+          } else {
+            tile.style.transform = '';
+            tile.style.color = '';
+          }
+        });
+      });
+      
+      // Reset tiles when mouse leaves
+      container.addEventListener('mouseleave', function() {
+        tiles.forEach(tile => {
+          tile.style.transform = '';
+          tile.style.color = '';
+        });
+      });
+    }
+    
+    // Add random gentle movement
+    function addRandomMovement() {
+      tiles.forEach((tile, index) => {
+        const randomDelay = Math.random() * 2000;
+        
+        setTimeout(() => {
+          const randomX = (Math.random() - 0.5) * 10;
+          const randomY = (Math.random() - 0.5) * 10;
+          const randomRotate = (Math.random() - 0.5) * 5;
+          
+          tile.style.transform += ` translate(${randomX}px, ${randomY}px) rotate(${randomRotate}deg)`;
+          
+          setTimeout(() => {
+            tile.style.transform = tile.style.transform.replace(` translate(${randomX}px, ${randomY}px) rotate(${randomRotate}deg)`, '');
+          }, 3000);
+        }, randomDelay);
+      });
+    }
+    
+    // Apply random movement every 5 seconds
+    setInterval(addRandomMovement, 5000);
+    
+    // Add tilt effect to cards
+    const tiltCards = document.querySelectorAll('.tilt-card');
+    
+    tiltCards.forEach(card => {
+      card.addEventListener('mousemove', function(e) {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = (y - centerY) / centerY * -10;
+        const rotateY = (x - centerX) / centerX * 10;
+        
+        card.style.transform = `translateY(-8px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        card.style.transform = '';
+      });
+    });
+  });
+</script>

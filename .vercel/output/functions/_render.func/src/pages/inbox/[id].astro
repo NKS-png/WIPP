@@ -290,7 +290,7 @@ const { data: messages } = await supabase
         input.value = '';
 
         try {
-          const response = await fetch('/api/debug-send-message', {  // Using debug API temporarily
+          const response = await fetch('/api/send-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -307,10 +307,25 @@ const { data: messages } = await supabase
           } catch (jsonError) {
             // If response is not JSON, get text instead
             const responseText = await response.text();
-            throw new Error(`Server error: ${responseText}`);
+            console.error('Non-JSON response:', responseText);
+            throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}...`);
           }
 
           if (!response.ok) {
+            // Check if this is an encryption requirement error
+            if (responseData.requiresEncryption) {
+              const shouldSetupEncryption = confirm(
+                'Encryption setup is required to send messages.\n\n' +
+                'This ensures your messages are secure and private.\n\n' +
+                'Would you like to set up encryption now?'
+              );
+              
+              if (shouldSetupEncryption) {
+                window.location.href = '/encryption-status';
+                return;
+              }
+            }
+            
             throw new Error(responseData.error || 'Failed to send message');
           }
 
@@ -467,7 +482,7 @@ const { data: messages } = await supabase
         console.log('Encryption not available:', e.message);
       }
       
-      let apiEndpoint = '/api/debug-send-message';  // Using debug API temporarily
+      let apiEndpoint = '/api/send-message';
       let requestBody = {
         conversation_id: conversationId,
         content: content
@@ -536,12 +551,26 @@ const { data: messages } = await supabase
         }
 
         if (!response.ok) {
+          // Check if this is an encryption requirement error
+          if (responseData.requiresEncryption) {
+            const shouldSetupEncryption = confirm(
+              'Encryption setup is required to send messages.\n\n' +
+              'This ensures your messages are secure and private.\n\n' +
+              'Would you like to set up encryption now?'
+            );
+            
+            if (shouldSetupEncryption) {
+              window.location.href = '/encryption-status';
+              return;
+            }
+          }
+          
           throw new Error(responseData.error || 'Failed to send message');
         }
 
         // Update optimistic message with real data
         optimisticMsg.classList.remove('optimistic-message');
-        optimisticMsg.setAttribute('data-message-id', responseData.data?.[0]?.id || 'temp-id');
+        optimisticMsg.setAttribute('data-message-id', responseData.message?.id || 'temp-id');
         const timestampSpan = optimisticMsg.querySelector('span');
         if (timestampSpan) {
           timestampSpan.textContent = 'Just now';

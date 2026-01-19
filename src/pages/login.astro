@@ -64,6 +64,23 @@ const message = url.searchParams.get('message');
 </BaseLayout>
 
 <script>
+  import { supabase } from '../lib/supabase';
+
+  // Import auto encryption module
+  let autoEncryption = null;
+  
+  async function loadAutoEncryption() {
+    try {
+      const autoEncryptionModule = await import('../lib/autoEncryption.js');
+      autoEncryption = autoEncryptionModule.autoEncryption;
+    } catch (error) {
+      console.log('Auto encryption not available:', error.message);
+    }
+  }
+
+  // Load auto encryption on page load
+  loadAutoEncryption();
+
   // 1. Define a clean "Pop" sound (Base64 encoded to avoid external files)
   const popSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder; replace with actual base64 below for real sound
   
@@ -106,6 +123,34 @@ const message = url.searchParams.get('message');
     
     // The form will now proceed to submit to the server...
   });
+
+  // Initialize encryption after successful login
+  async function initializeEncryptionAfterLogin() {
+    // Check if we're being redirected from a successful login
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginSuccess = urlParams.get('login') === 'success';
+    
+    if (loginSuccess && autoEncryption) {
+      try {
+        // Get current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          console.log('Initializing automatic encryption after login:', session.user.id);
+          const encryptionSuccess = await autoEncryption.initializeForUser(session.user.id);
+          if (encryptionSuccess) {
+            console.log('Automatic encryption initialized successfully after login');
+          } else {
+            console.log('Failed to initialize automatic encryption after login');
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing encryption after login:', error);
+      }
+    }
+  }
+
+  // Try to initialize encryption after page load
+  setTimeout(initializeEncryptionAfterLogin, 1000);
 </script>
 
 <style>

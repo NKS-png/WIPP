@@ -1,10 +1,10 @@
 /* empty css                                    */
-import { e as createComponent, f as createAstro, m as maybeRenderHead, h as addAttribute, p as renderScript, r as renderTemplate, k as renderComponent, q as Fragment } from '../../chunks/astro/server_Bc4ROJMT.mjs';
+import { e as createComponent, f as createAstro, m as maybeRenderHead, h as addAttribute, l as renderScript, r as renderTemplate, k as renderComponent, q as Fragment } from '../../chunks/astro/server_DIkOM8_r.mjs';
 import 'piccolore';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_CXZjk4io.mjs';
-import { $ as $$ProjectCard } from '../../chunks/ProjectCard_DIiSjjFO.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_Br4iNQNp.mjs';
+import { $ as $$ProjectCard } from '../../chunks/ProjectCard_B2MfjUnL.mjs';
 import 'clsx';
-import { s as supabase } from '../../chunks/supabase_DJaqNw0S.mjs';
+import { s as supabase } from '../../chunks/supabase_CDb81jFl.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const $$Astro$1 = createAstro();

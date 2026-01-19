@@ -1,8 +1,8 @@
 /* empty css                                    */
-import { e as createComponent, f as createAstro, r as renderTemplate, x as defineScriptVars, k as renderComponent, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_Bc4ROJMT.mjs';
+import { e as createComponent, f as createAstro, r as renderTemplate, x as defineScriptVars, k as renderComponent, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_DIkOM8_r.mjs';
 import 'piccolore';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_CXZjk4io.mjs';
-import { s as supabase } from '../../chunks/supabase_DJaqNw0S.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_Br4iNQNp.mjs';
+import { s as supabase } from '../../chunks/supabase_CDb81jFl.mjs';
 /* empty css                                   */
 export { renderers } from '../../renderers.mjs';
 
@@ -120,7 +120,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         input.value = '';
 
         try {
-          const response = await fetch('/api/debug-send-message', {  // Using debug API temporarily
+          const response = await fetch('/api/send-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -137,10 +137,25 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
           } catch (jsonError) {
             // If response is not JSON, get text instead
             const responseText = await response.text();
-            throw new Error(\`Server error: \${responseText}\`);
+            console.error('Non-JSON response:', responseText);
+            throw new Error(\`Server returned non-JSON response: \${responseText.substring(0, 100)}...\`);
           }
 
           if (!response.ok) {
+            // Check if this is an encryption requirement error
+            if (responseData.requiresEncryption) {
+              const shouldSetupEncryption = confirm(
+                'Encryption setup is required to send messages.\\n\\n' +
+                'This ensures your messages are secure and private.\\n\\n' +
+                'Would you like to set up encryption now?'
+              );
+              
+              if (shouldSetupEncryption) {
+                window.location.href = '/encryption-status';
+                return;
+              }
+            }
+            
             throw new Error(responseData.error || 'Failed to send message');
           }
 
@@ -297,7 +312,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         console.log('Encryption not available:', e.message);
       }
       
-      let apiEndpoint = '/api/debug-send-message';  // Using debug API temporarily
+      let apiEndpoint = '/api/send-message';
       let requestBody = {
         conversation_id: conversationId,
         content: content
@@ -366,12 +381,26 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         }
 
         if (!response.ok) {
+          // Check if this is an encryption requirement error
+          if (responseData.requiresEncryption) {
+            const shouldSetupEncryption = confirm(
+              'Encryption setup is required to send messages.\\n\\n' +
+              'This ensures your messages are secure and private.\\n\\n' +
+              'Would you like to set up encryption now?'
+            );
+            
+            if (shouldSetupEncryption) {
+              window.location.href = '/encryption-status';
+              return;
+            }
+          }
+          
           throw new Error(responseData.error || 'Failed to send message');
         }
 
         // Update optimistic message with real data
         optimisticMsg.classList.remove('optimistic-message');
-        optimisticMsg.setAttribute('data-message-id', responseData.data?.[0]?.id || 'temp-id');
+        optimisticMsg.setAttribute('data-message-id', responseData.message?.id || 'temp-id');
         const timestampSpan = optimisticMsg.querySelector('span');
         if (timestampSpan) {
           timestampSpan.textContent = 'Just now';
@@ -583,7 +612,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         input.value = '';
 
         try {
-          const response = await fetch('/api/debug-send-message', {  // Using debug API temporarily
+          const response = await fetch('/api/send-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -600,10 +629,25 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
           } catch (jsonError) {
             // If response is not JSON, get text instead
             const responseText = await response.text();
-            throw new Error(\\\`Server error: \\\${responseText}\\\`);
+            console.error('Non-JSON response:', responseText);
+            throw new Error(\\\`Server returned non-JSON response: \\\${responseText.substring(0, 100)}...\\\`);
           }
 
           if (!response.ok) {
+            // Check if this is an encryption requirement error
+            if (responseData.requiresEncryption) {
+              const shouldSetupEncryption = confirm(
+                'Encryption setup is required to send messages.\\\\n\\\\n' +
+                'This ensures your messages are secure and private.\\\\n\\\\n' +
+                'Would you like to set up encryption now?'
+              );
+              
+              if (shouldSetupEncryption) {
+                window.location.href = '/encryption-status';
+                return;
+              }
+            }
+            
             throw new Error(responseData.error || 'Failed to send message');
           }
 
@@ -760,7 +804,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         console.log('Encryption not available:', e.message);
       }
       
-      let apiEndpoint = '/api/debug-send-message';  // Using debug API temporarily
+      let apiEndpoint = '/api/send-message';
       let requestBody = {
         conversation_id: conversationId,
         content: content
@@ -829,12 +873,26 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
         }
 
         if (!response.ok) {
+          // Check if this is an encryption requirement error
+          if (responseData.requiresEncryption) {
+            const shouldSetupEncryption = confirm(
+              'Encryption setup is required to send messages.\\\\n\\\\n' +
+              'This ensures your messages are secure and private.\\\\n\\\\n' +
+              'Would you like to set up encryption now?'
+            );
+            
+            if (shouldSetupEncryption) {
+              window.location.href = '/encryption-status';
+              return;
+            }
+          }
+          
           throw new Error(responseData.error || 'Failed to send message');
         }
 
         // Update optimistic message with real data
         optimisticMsg.classList.remove('optimistic-message');
-        optimisticMsg.setAttribute('data-message-id', responseData.data?.[0]?.id || 'temp-id');
+        optimisticMsg.setAttribute('data-message-id', responseData.message?.id || 'temp-id');
         const timestampSpan = optimisticMsg.querySelector('span');
         if (timestampSpan) {
           timestampSpan.textContent = 'Just now';

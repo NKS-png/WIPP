@@ -1,7 +1,7 @@
-import { e as createComponent, m as maybeRenderHead, p as renderScript, r as renderTemplate, f as createAstro, k as renderComponent, h as addAttribute, q as Fragment, v as renderSlot, w as renderHead } from './astro/server_Bc4ROJMT.mjs';
+import { e as createComponent, m as maybeRenderHead, l as renderScript, r as renderTemplate, f as createAstro, k as renderComponent, h as addAttribute, q as Fragment, v as renderSlot, w as renderHead } from './astro/server_DIkOM8_r.mjs';
 import 'piccolore';
 import 'clsx';
-import { s as supabase } from './supabase_DJaqNw0S.mjs';
+import { s as supabase } from './supabase_CDb81jFl.mjs';
 /* empty css                         */
 
 const $$ThemeToggle = createComponent(($$result, $$props, $$slots) => {

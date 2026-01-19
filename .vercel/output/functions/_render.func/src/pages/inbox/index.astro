@@ -767,12 +767,34 @@ console.log('Final conversations (with messages only):', sortedConversations);
         })
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        // If response is not JSON, get text instead
+        const responseText = await response.text();
+        console.error('Non-JSON response:', responseText);
+        throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}...`);
+      }
 
       if (response.ok) {
         // Redirect to the new conversation
         window.location.href = `/inbox/${data.conversation_id}`;
       } else {
+        // Check if this is an encryption requirement error
+        if (data.requiresEncryption) {
+          const shouldSetupEncryption = confirm(
+            'Encryption setup is required to start conversations.\n\n' +
+            'This ensures your messages are secure and private.\n\n' +
+            'Would you like to set up encryption now?'
+          );
+          
+          if (shouldSetupEncryption) {
+            window.location.href = '/encryption-status';
+            return;
+          }
+        }
+        
         throw new Error(data.error || 'Failed to create conversation');
       }
     } catch (error) {

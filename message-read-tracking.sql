@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_message_reads_read_at ON message_reads(read_at DE
 
 -- Function to mark a message as read by a user
 CREATE OR REPLACE FUNCTION mark_message_read(p_message_id UUID, p_user_id UUID)
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   -- Insert or update the read status
   INSERT INTO message_reads (message_id, user_id, read_at)
@@ -34,11 +34,11 @@ EXCEPTION
   WHEN OTHERS THEN
     RETURN FALSE;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to mark all messages in a conversation as read by a user
 CREATE OR REPLACE FUNCTION mark_conversation_read(p_conversation_id UUID, p_user_id UUID)
-RETURNS INTEGER AS $
+RETURNS INTEGER AS $$
 DECLARE
   marked_count INTEGER := 0;
   message_record RECORD;
@@ -59,11 +59,11 @@ BEGIN
   
   RETURN marked_count;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to get unread message count for a user
 CREATE OR REPLACE FUNCTION get_unread_count(p_user_id UUID)
-RETURNS INTEGER AS $
+RETURNS INTEGER AS $$
 DECLARE
   unread_count INTEGER := 0;
 BEGIN
@@ -80,11 +80,11 @@ BEGIN
   
   RETURN unread_count;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to get unread count per conversation for a user
 CREATE OR REPLACE FUNCTION get_conversation_unread_counts(p_user_id UUID)
-RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $
+RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -99,7 +99,7 @@ BEGIN
     AND m.created_at >= (timezone('utc'::text, now()) - INTERVAL '7 days') -- Only last 7 days
   GROUP BY m.conversation_id;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant permissions
 GRANT EXECUTE ON FUNCTION mark_message_read(UUID, UUID) TO authenticated;

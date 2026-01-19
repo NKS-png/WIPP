@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const { conversation_id, content } = await request.json();
+    const { conversation_id, content, encrypted_content } = await request.json();
 
     if (!conversation_id || !content) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -65,14 +65,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    // Determine if message is encrypted
+    const isEncrypted = !!encrypted_content;
+    const messageContent = content.trim();
+
     // Insert message
+    const messageData: any = {
+      conversation_id,
+      sender_id: sessionData.session.user.id,
+      content: messageContent
+    };
+
+    // Add encryption data if present
+    if (isEncrypted) {
+      messageData.is_encrypted = true;
+      messageData.encrypted_content = encrypted_content;
+    }
+
     const { data, error } = await supabase
       .from('messages')
-      .insert({
-        conversation_id,
-        sender_id: sessionData.session.user.id,
-        content: content.trim()
-      })
+      .insert(messageData)
       .select();
 
     if (error) {

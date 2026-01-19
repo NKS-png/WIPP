@@ -1,4 +1,4 @@
-import { s as supabase } from '../../chunks/supabase_DJaqNw0S.mjs';
+import { s as supabase } from '../../chunks/supabase_CDb81jFl.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const GET = async ({ url, cookies }) => {

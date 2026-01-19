@@ -1,4 +1,4 @@
-import { s as supabase } from '../../../chunks/supabase_DJaqNw0S.mjs';
+import { s as supabase } from '../../../chunks/supabase_CDb81jFl.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const POST = async ({ request, cookies, redirect }) => {
@@ -22,16 +22,16 @@ const POST = async ({ request, cookies, redirect }) => {
       cookies.set("sb-access-token", session.access_token, {
         path: "/",
         httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        secure: true,
+        sameSite: "strict" ,
         maxAge: 60 * 60 * 24 * 7
         // 1 week
       });
       cookies.set("sb-refresh-token", session.refresh_token, {
         path: "/",
         httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        secure: true,
+        sameSite: "strict" ,
         maxAge: 60 * 60 * 24 * 30
         // 30 days
       });

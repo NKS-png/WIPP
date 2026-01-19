@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '../../../../chunks/index_C1jgwVY-.mjs';
 export { renderers } from '../../../../renderers.mjs';
 
 const POST = async ({ request, cookies }) => {

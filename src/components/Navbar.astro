@@ -146,12 +146,11 @@ const displayInitial = displayName.charAt(0).toUpperCase();
                         </svg>
                         <span>Keys unlocked</span>
                       </div>
-                      <div id="encryption-none" class="hidden flex items-center gap-2 text-neutral-500">
+                      <div id="encryption-none" class="hidden flex items-center gap-2 text-green-600 dark:text-green-400">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span>No encryption</span>
-                        <button id="setup-encryption-navbar" class="text-blue-600 hover:text-blue-800 underline">Setup</button>
+                        <span>Auto-encrypted</span>
                       </div>
                     </div>
                   </div>
@@ -485,52 +484,23 @@ const displayInitial = displayName.charAt(0).toUpperCase();
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-
-      // Import keyManager dynamically to avoid issues
-      const { keyManager } = await import('../lib/keyManager.js');
       
       const encryptionLocked = document.getElementById('encryption-locked');
       const encryptionUnlocked = document.getElementById('encryption-unlocked');
       const encryptionNone = document.getElementById('encryption-none');
       
-      // Check if user has encryption keys
-      const hasKeys = await keyManager.hasEncryptionKeys(session.user.id);
+      // For automatic encryption, always show as auto-encrypted
+      encryptionLocked?.classList.add('hidden');
+      encryptionUnlocked?.classList.add('hidden');
+      encryptionNone?.classList.remove('hidden');
       
-      if (!hasKeys) {
-        // No encryption setup
-        encryptionLocked?.classList.add('hidden');
-        encryptionUnlocked?.classList.add('hidden');
-        encryptionNone?.classList.remove('hidden');
-      } else if (keyManager.isUnlocked) {
-        // Keys are unlocked
-        encryptionLocked?.classList.add('hidden');
-        encryptionNone?.classList.add('hidden');
-        encryptionUnlocked?.classList.remove('hidden');
-      } else {
-        // Keys are locked
-        encryptionUnlocked?.classList.add('hidden');
-        encryptionNone?.classList.add('hidden');
-        encryptionLocked?.classList.remove('hidden');
-      }
     } catch (error) {
       console.error('Error updating encryption status:', error);
+      // Default to showing auto-encrypted status
+      const encryptionNone = document.getElementById('encryption-none');
+      encryptionNone?.classList.remove('hidden');
     }
   }
-
-  // Handle encryption buttons
-  document.getElementById('unlock-keys-navbar')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (window.showUnlockKeys) {
-      window.showUnlockKeys();
-    }
-  });
-
-  document.getElementById('setup-encryption-navbar')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (window.showEncryptionSetup) {
-      window.showEncryptionSetup();
-    }
-  });
 
   // Update encryption status on page load and periodically
   updateEncryptionStatus();

@@ -3,10 +3,11 @@
   "framework": "astro",
   "functions": {
     "src/pages/api/**/*.ts": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs20.x"
     }
   },
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "regions": ["bom1"]
 }

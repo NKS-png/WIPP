@@ -11,7 +11,9 @@ export default defineConfig({
     },
     speedInsights: {
       enabled: true
-    }
+    },
+    edgeMiddleware: false,
+    functionPerRoute: false
   }),
   build: {
     inlineStylesheets: 'auto'
@@ -22,6 +24,9 @@ export default defineConfig({
     },
     ssr: {
       noExternal: ['@supabase/supabase-js']
+    },
+    optimizeDeps: {
+      exclude: ['@supabase/supabase-js']
     }
   }
 });

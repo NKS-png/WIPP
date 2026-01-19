@@ -26,7 +26,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const { target_user_id, initial_message, encrypted_initial_message } = await request.json();
+    const requestBody = await request.json();
+    const { target_user_id } = requestBody;
 
     if (!target_user_id) {
       return new Response(JSON.stringify({ error: 'Missing target_user_id' }), { 
@@ -44,16 +45,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Check if conversation already exists - simplified query
+    // Check if conversation already exists
     const { data: existingParticipants } = await supabase
       .from('conversation_participants')
       .select('conversation_id, user_id')
       .or(`user_id.eq.${currentUserId},user_id.eq.${target_user_id}`);
 
-    console.log('Existing participants:', existingParticipants);
-
     // Find shared conversation
-    let sharedConversationId: string | null = null;
+    let sharedConversationId = null;
     if (existingParticipants && existingParticipants.length > 0) {
       const conversationCounts: Record<string, number> = {};
       existingParticipants.forEach(p => {
@@ -70,7 +69,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (sharedConversationId) {
-      console.log('Found existing conversation:', sharedConversationId);
       return new Response(JSON.stringify({ 
         conversation_id: sharedConversationId 
       }), {
@@ -90,20 +88,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .single();
 
     if (conversationError) {
-      console.error('Error creating conversation:', conversationError);
-      
-      // Check if this is a RLS/permissions error that might indicate encryption setup is required
-      if (conversationError.code === '42501' || conversationError.message?.includes('permission') || conversationError.message?.includes('policy')) {
-        return new Response(JSON.stringify({ 
-          error: 'Encryption setup required',
-          details: 'Please set up encryption keys before starting conversations. Visit /encryption-status to check your setup.',
-          requiresEncryption: true
-        }), { 
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
       return new Response(JSON.stringify({ 
         error: 'Failed to create conversation',
         details: conversationError.message 
@@ -112,8 +96,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' }
       });
     }
-
-    console.log('Created new conversation:', newConversation.id);
 
     // Add participants
     const { error: participantsError } = await supabase
@@ -124,22 +106,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       ]);
 
     if (participantsError) {
-      console.error('Error adding participants:', participantsError);
-      
-      // Check if this is a RLS/permissions error
-      if (participantsError.code === '42501' || participantsError.message?.includes('permission') || participantsError.message?.includes('policy')) {
-        // Clean up the conversation
-        await supabase.from('conversations').delete().eq('id', newConversation.id);
-        return new Response(JSON.stringify({ 
-          error: 'Encryption setup required',
-          details: 'Please set up encryption keys before starting conversations. Visit /encryption-status to check your setup.',
-          requiresEncryption: true
-        }), { 
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
       // Clean up the conversation if participants failed
       await supabase.from('conversations').delete().eq('id', newConversation.id);
       return new Response(JSON.stringify({ 
@@ -151,39 +117,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    console.log('Added participants to conversation');
-
-    // Verify both participants were added
-    const { data: verifyParticipants } = await supabase
-      .from('conversation_participants')
-      .select('user_id')
-      .eq('conversation_id', newConversation.id);
-
-    console.log('Verified participants:', verifyParticipants);
-
-    if (!verifyParticipants || verifyParticipants.length !== 2) {
-      console.error('Participant verification failed');
-      // Clean up the conversation if participants failed
-      await supabase.from('conversations').delete().eq('id', newConversation.id);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to verify conversation participants',
-        details: `Expected 2 participants, got ${verifyParticipants?.length || 0}` 
-      }), { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     return new Response(JSON.stringify({ 
-      conversation_id: newConversation.id,
-      participants: verifyParticipants.length
+      conversation_id: newConversation.id
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
 
-  } catch (error) {
-    console.error('Create conversation API error:', error);
+  } catch (error: any) {
     return new Response(JSON.stringify({ 
       error: 'Internal server error',
       details: error.message 

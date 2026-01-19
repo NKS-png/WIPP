@@ -8,7 +8,14 @@ function getEmojiAvatar(username: string): string {
   const hash = username.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
   const emoji = emojis[hash % emojis.length];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3f4f6"/><text x="50" y="65" font-size="50" text-anchor="middle">${emoji}</text></svg>`;
-  return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
+  
+  // Use btoa instead of Buffer for better serverless compatibility
+  try {
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  } catch (error) {
+    // Fallback to URL encoding if btoa fails
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
 }
 
 // 1. GET URL PARAMS (Search & Category)

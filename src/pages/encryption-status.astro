@@ -217,8 +217,14 @@ if (!currentUser) {
       updateCheckStatus('check-messages-encryption', data.checks.messages_has_encryption_columns);
       updateCheckStatus('check-encryption-functions', data.checks.encryption_functions_exist);
 
-      // Check conversation setup separately
-      checkConversationSetup();
+      // Check conversation setup separately (with error handling)
+      try {
+        await checkConversationSetup();
+      } catch (conversationError) {
+        console.error('Error checking conversation setup:', conversationError);
+        // Don't fail the entire check if conversation setup fails
+        updateCheckStatus('check-conversation-setup', false);
+      }
 
     } catch (error) {
       console.error('Error checking encryption status:', error);

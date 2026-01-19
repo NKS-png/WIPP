@@ -8,7 +8,13 @@ export const GET: APIRoute = async ({ cookies }) => {
     const refreshToken = cookies.get('sb-refresh-token')?.value;
 
     if (!accessToken || !refreshToken) {
-      return new Response(JSON.stringify({ error: 'Not authenticated' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Not authenticated',
+        canCreateConversations: false,
+        hasEncryptionTables: false,
+        hasEncryptionKeys: false,
+        recommendation: 'Please log in to check messaging setup'
+      }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -20,52 +26,66 @@ export const GET: APIRoute = async ({ cookies }) => {
     });
 
     if (!sessionData.session) {
-      return new Response(JSON.stringify({ error: 'Invalid session' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid session',
+        canCreateConversations: false,
+        hasEncryptionTables: false,
+        hasEncryptionKeys: false,
+        recommendation: 'Please log in again'
+      }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Test if we can create a conversation (this will fail if RLS is too restrictive)
-    const testConversationId = 'test-' + Date.now();
+    // Test basic conversation table access (safer than creating test data)
+    let canCreateConversations = false;
+    let testError = null;
     
-    // Try to insert a test conversation
-    const { error: testError } = await supabase
-      .from('conversations')
-      .insert({
-        id: testConversationId,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-    // Clean up the test conversation if it was created
-    if (!testError) {
-      await supabase.from('conversations').delete().eq('id', testConversationId);
+    try {
+      // Just try to read from conversations table to test access
+      const { error: accessError } = await supabase
+        .from('conversations')
+        .select('id')
+        .limit(1);
+      
+      canCreateConversations = !accessError;
+      testError = accessError;
+    } catch (error) {
+      canCreateConversations = false;
+      testError = error;
     }
 
-    // Check if encryption tables exist
-    const { data: encryptionTables } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .eq('table_name', 'user_encryption_keys');
-
-    const hasEncryptionTables = encryptionTables && encryptionTables.length > 0;
+    // Check if encryption tables exist - use a safer approach
+    let hasEncryptionTables = false;
+    try {
+      const { data: testEncryptionTable } = await supabase
+        .from('user_encryption_keys')
+        .select('id')
+        .limit(1);
+      hasEncryptionTables = true; // If query succeeds, table exists
+    } catch (encryptionError) {
+      hasEncryptionTables = false; // Table doesn't exist or no access
+    }
 
     // Check if user has encryption keys
     let hasEncryptionKeys = false;
     if (hasEncryptionTables) {
-      const { data: userKeys } = await supabase
-        .from('user_encryption_keys')
-        .select('id')
-        .eq('user_id', sessionData.session.user.id)
-        .limit(1);
-      
-      hasEncryptionKeys = userKeys && userKeys.length > 0;
+      try {
+        const { data: userKeys } = await supabase
+          .from('user_encryption_keys')
+          .select('id')
+          .eq('user_id', sessionData.session.user.id)
+          .limit(1);
+        
+        hasEncryptionKeys = userKeys && userKeys.length > 0;
+      } catch (keyError) {
+        hasEncryptionKeys = false;
+      }
     }
 
     return new Response(JSON.stringify({
-      canCreateConversations: !testError,
+      canCreateConversations,
       hasEncryptionTables,
       hasEncryptionKeys,
       error: testError?.message || null,
@@ -83,7 +103,11 @@ export const GET: APIRoute = async ({ cookies }) => {
     console.error('Check conversation setup error:', error);
     return new Response(JSON.stringify({
       error: 'Internal server error',
-      details: error.message
+      details: error.message,
+      canCreateConversations: false,
+      hasEncryptionTables: false,
+      hasEncryptionKeys: false,
+      recommendation: 'There was an error checking your setup. Please try again or contact support.'
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

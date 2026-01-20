@@ -70,27 +70,37 @@ GRANT ALL ON conversation_participants TO authenticated;
 GRANT ALL ON messages TO authenticated;
 GRANT ALL ON message_reads TO authenticated;
 
--- 6. Create function to update conversation timestamp
+-- 6. Drop existing triggers and functions first to avoid conflicts
+DROP TRIGGER IF EXISTS update_conversation_on_message ON messages;
+DROP TRIGGER IF EXISTS update_conversation_timestamp_trigger ON messages;
+DROP FUNCTION IF EXISTS update_conversation_timestamp();
+DROP FUNCTION IF EXISTS mark_message_read(UUID, UUID);
+DROP FUNCTION IF EXISTS mark_conversation_read(UUID, UUID);
+DROP FUNCTION IF EXISTS get_unread_count(UUID);
+DROP FUNCTION IF EXISTS get_conversation_unread_counts(UUID);
+DROP FUNCTION IF EXISTS get_or_create_conversation(UUID, UUID);
+
+-- 7. Create function to update conversation timestamp
 CREATE OR REPLACE FUNCTION update_conversation_timestamp()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   UPDATE conversations 
   SET updated_at = timezone('utc'::text, now())
   WHERE id = NEW.conversation_id;
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 7. Create trigger to automatically update conversation timestamp
+-- 8. Create trigger to automatically update conversation timestamp
 DROP TRIGGER IF EXISTS update_conversation_timestamp_trigger ON messages;
 CREATE TRIGGER update_conversation_timestamp_trigger
   AFTER INSERT ON messages
   FOR EACH ROW
   EXECUTE FUNCTION update_conversation_timestamp();
 
--- 8. Function to mark a message as read by a user
+-- 9. Function to mark a message as read by a user
 CREATE OR REPLACE FUNCTION mark_message_read(p_message_id UUID, p_user_id UUID)
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   INSERT INTO message_reads (message_id, user_id, read_at)
   VALUES (p_message_id, p_user_id, timezone('utc'::text, now()))
@@ -102,11 +112,11 @@ EXCEPTION
   WHEN OTHERS THEN
     RETURN FALSE;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 9. Function to mark all messages in a conversation as read by a user
+-- 10. Function to mark all messages in a conversation as read by a user
 CREATE OR REPLACE FUNCTION mark_conversation_read(p_conversation_id UUID, p_user_id UUID)
-RETURNS INTEGER AS $
+RETURNS INTEGER AS $$
 DECLARE
   marked_count INTEGER := 0;
   message_record RECORD;
@@ -126,11 +136,11 @@ BEGIN
   
   RETURN marked_count;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 10. Function to get unread message count for a user
+-- 11. Function to get unread message count for a user
 CREATE OR REPLACE FUNCTION get_unread_count(p_user_id UUID)
-RETURNS INTEGER AS $
+RETURNS INTEGER AS $$
 DECLARE
   unread_count INTEGER := 0;
 BEGIN
@@ -144,11 +154,11 @@ BEGIN
   
   RETURN unread_count;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 11. Function to get unread count per conversation for a user
+-- 12. Function to get unread count per conversation for a user
 CREATE OR REPLACE FUNCTION get_conversation_unread_counts(p_user_id UUID)
-RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $
+RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -162,11 +172,11 @@ BEGIN
     AND mr.id IS NULL
   GROUP BY m.conversation_id;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 12. Function to get or create a conversation between two users
+-- 13. Function to get or create a conversation between two users
 CREATE OR REPLACE FUNCTION get_or_create_conversation(p_user1_id UUID, p_user2_id UUID)
-RETURNS UUID AS $
+RETURNS UUID AS $$
 DECLARE
   conversation_id UUID;
 BEGIN
@@ -193,9 +203,9 @@ BEGIN
 
   RETURN conversation_id;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 13. Grant execute permissions on all functions
+-- 14. Grant execute permissions on all functions
 GRANT EXECUTE ON FUNCTION update_conversation_timestamp() TO authenticated;
 GRANT EXECUTE ON FUNCTION mark_message_read(UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION mark_conversation_read(UUID, UUID) TO authenticated;
@@ -203,7 +213,7 @@ GRANT EXECUTE ON FUNCTION get_unread_count(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_conversation_unread_counts(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_or_create_conversation(UUID, UUID) TO authenticated;
 
--- 14. Clean up any orphaned data
+-- 15. Clean up any orphaned data
 DELETE FROM conversation_participants 
 WHERE user_id NOT IN (SELECT id FROM profiles);
 
@@ -213,7 +223,7 @@ WHERE sender_id NOT IN (SELECT id FROM profiles);
 DELETE FROM conversations 
 WHERE id NOT IN (SELECT DISTINCT conversation_id FROM conversation_participants);
 
--- 15. Update existing conversations to have updated_at
+-- 16. Update existing conversations to have updated_at
 UPDATE conversations 
 SET updated_at = created_at 
 WHERE updated_at IS NULL;

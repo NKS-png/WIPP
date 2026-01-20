@@ -33,37 +33,6 @@ const hasMultiple = imageArray.length > 1;
       </div>
     </div>
 
-    <!-- Navigation Controls - Always show if multiple images -->
-    {hasMultiple && (
-      <>
-        <!-- Navigation Arrows -->
-        <button class="slider-prev absolute left-3 top-1/2 -translate-y-1/2 bg-stone-800/90 dark:bg-stone-200/90 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-50 dark:text-stone-900 p-3 rounded-xl transition-all shadow-lg z-20">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <button class="slider-next absolute right-3 top-1/2 -translate-y-1/2 bg-stone-800/90 dark:bg-stone-200/90 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-50 dark:text-stone-900 p-3 rounded-xl transition-all shadow-lg z-20">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-
-        <!-- Image Counter -->
-        <div class="absolute top-3 left-3 bg-stone-800/90 dark:bg-stone-200/90 text-stone-50 dark:text-stone-900 px-3 py-2 rounded-xl text-sm font-normal shadow-lg z-20">
-          <span class="current-image">1</span> / {imageArray.length}
-        </div>
-
-        <!-- Dots Navigation -->
-        <div class="slider-dots absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-stone-800/50 dark:bg-stone-200/50 px-3 py-2 rounded-xl z-20">
-          {imageArray.map((_, index) => (
-            <button 
-              class={`w-3 h-3 rounded-full transition-colors ${index === 0 ? 'bg-stone-50 dark:bg-stone-200' : 'bg-stone-50/50 dark:bg-stone-200/50'}`} 
-              data-slide={index}
-            ></button>
-          ))}
-        </div>
-      </>
-    )}
   </div>
 </div>
 

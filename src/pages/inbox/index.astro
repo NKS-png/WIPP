@@ -210,11 +210,11 @@ const hasConversations = sortedConversations.length > 0;
 ---
 
 <BaseLayout title="Inbox">
-  <div class="min-h-screen">
+  <div class="min-h-screen inbox-page">
     <div class="max-w-4xl mx-auto px-6 py-8">
       
       <!-- Header -->
-      <div class="mb-8">
+      <div class="mb-8 hidden md:block">
         <h1 class="text-3xl font-normal text-stone-800 dark:text-stone-200 mb-2 font-serif">
           Messages
         </h1>
@@ -248,7 +248,7 @@ const hasConversations = sortedConversations.length > 0;
           <input
             type="text"
             id="search-input"
-            placeholder="Search conversations..."
+            placeholder="      Search conversations..."
             class="input-field pl-12"
           />
           <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,6 +458,13 @@ const hasConversations = sortedConversations.length > 0;
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  /* Hide footer on inbox page */
+  .inbox-page footer {
+    display: none;
+  }
+</style>
 
 <script>
   // Import modules

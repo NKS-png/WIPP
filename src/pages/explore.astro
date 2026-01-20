@@ -49,7 +49,7 @@ const categories = [
     <div class="max-w-7xl mx-auto px-6 py-4">
       
       <div class="flex flex-col gap-4 mb-6">
-        <h1 class="text-2xl md:text-3xl font-normal tracking-normal text-stone-800 dark:text-stone-200 flex items-center gap-2">
+        <h1 class="hidden md:block text-2xl md:text-3xl font-normal tracking-normal text-stone-800 dark:text-stone-200 flex items-center gap-2">
           What people are making <span class="text-stone-500 font-normal text-lg md:text-xl">/ {category || 'All Work'}</span>
         </h1>
 
@@ -59,12 +59,12 @@ const categories = [
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <input 
-            type="text" 
+          <input
+            type="text"
             name="q"
             value={query || ''}
-            placeholder="Search projects..." 
-            class="input-field block w-full pl-10 pr-3 py-3"
+            placeholder="      Search projects..."
+            class="input-field block w-full pl-12 pr-3 py-3"
           />
           {category && <input type="hidden" name="category" value={category} />}
         </form>
@@ -94,7 +94,7 @@ const categories = [
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 min-h-screen">
     
     {projects && projects.length > 0 ? (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div class="flex flex-col space-y-6">
         {projects.map((project, index) => (
           <a 
             href={`/project/${project.id}`} 

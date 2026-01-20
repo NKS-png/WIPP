@@ -2,14 +2,53 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { supabase } from '../../lib/supabase';
 
-// Fetch all communities with member counts
-const { data: communities } = await supabase
-  .from('communities')
-  .select(`
-    *,
-    members:community_members(count)
-  `)
-  .order('created_at', { ascending: false });
+// Fetch all communities with member counts using fallback approach
+let communities = [];
+try {
+  const { data: communitiesData } = await supabase
+    .from('communities')
+    .select(`
+      *,
+      members:community_members(count)
+    `)
+    .order('created_at', { ascending: false });
+  
+  communities = communitiesData || [];
+} catch (error) {
+  console.error('Communities join query failed, using fallback:', error);
+  
+  // Fallback: Get communities first, then member counts separately
+  const { data: communitiesData } = await supabase
+    .from('communities')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (communitiesData) {
+    // Get member counts for each community
+    const communitiesWithCounts = await Promise.all(
+      communitiesData.map(async (community) => {
+        try {
+          const { count } = await supabase
+            .from('community_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('community_id', community.id);
+          
+          return {
+            ...community,
+            members: [{ count: count || 0 }]
+          };
+        } catch (err) {
+          return {
+            ...community,
+            members: [{ count: 0 }]
+          };
+        }
+      })
+    );
+    
+    communities = communitiesWithCounts;
+  }
+}
 
 ---
 

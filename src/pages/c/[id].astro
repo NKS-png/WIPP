@@ -46,18 +46,54 @@ if (currentUser) {
   }
 }
 
-// 4. Fetch Posts
-const { data: posts } = await supabase
-  .from('posts')
-  .select(`*, profiles (username, full_name, avatar_url)`)
-  .eq('community_id', id)
-  .order('created_at', { ascending: false });
+// 4. Fetch Posts with fallback approach
+let posts = [];
+try {
+  const { data: postsData } = await supabase
+    .from('posts')
+    .select(`*, profiles (username, full_name, avatar_url)`)
+    .eq('community_id', id)
+    .order('created_at', { ascending: false });
+  
+  posts = postsData || [];
+} catch (error) {
+  console.error('Posts join query failed, using fallback:', error);
+  
+  // Fallback: Get posts first, then profiles separately
+  const { data: postsData } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('community_id', id)
+    .order('created_at', { ascending: false });
+  
+  if (postsData && postsData.length > 0) {
+    const userIds = [...new Set(postsData.map(p => p.user_id))];
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url')
+      .in('id', userIds);
+    
+    // Merge posts with profiles
+    posts = postsData.map(post => ({
+      ...post,
+      profiles: profilesData?.find(p => p.id === post.user_id) || null
+    }));
+  }
+}
 
-// 5. Fetch Member Count
-const { count: memberCount } = await supabase
-  .from('community_members')
-  .select('*', { count: 'exact', head: true })
-  .eq('community_id', id);
+// 5. Fetch Member Count with fallback
+let memberCount = 0;
+try {
+  const { count } = await supabase
+    .from('community_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('community_id', id);
+  memberCount = count || 0;
+} catch (error) {
+  console.error('Member count query failed:', error);
+  // Fallback to 0 if query fails
+  memberCount = 0;
+}
 ---
 
 <BaseLayout title={`c/${community.name}`}>
@@ -629,18 +665,41 @@ const { count: memberCount } = await supabase
           postData.p_feedback_goals = feedbackGoals;
         }
 
-        console.log('Calling post_to_workshop with:', postData);
+        console.log('Calling community post API with:', postData);
 
-        // Call the RPC function directly
-        const { data, error } = await supabase.rpc('post_to_workshop', postData);
+        // Use the community post API instead of direct RPC
+        const formData = new FormData();
+        formData.append('community_id', communityId);
+        formData.append('content', content);
+        formData.append('type', postType);
+        
+        if (postImageFile) {
+          formData.append('image', postImageFile);
+        }
 
-        if (error) {
-          console.error('RPC error:', error);
-          alert('Failed to post: ' + error.message);
+        if (postType === 'workshop') {
+          const workStage = document.getElementById('work-stage').value;
+          const intent = document.getElementById('intent').value;
+          const feedbackGoals = Array.from(document.querySelectorAll('input[name="feedback-goals"]:checked')).map(cb => cb.value);
+          
+          formData.append('work_stage', workStage);
+          formData.append('intent', intent);
+          formData.append('feedback_goals', JSON.stringify(feedbackGoals));
+        }
+
+        const response = await fetch('/api/community/post', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Post API error:', errorText);
+          alert('Failed to post: ' + errorText);
           return;
         }
 
-        console.log('Post created successfully:', data);
+        console.log('Post created successfully');
         // Close modal first
         document.getElementById('post-modal').classList.add('hidden');
         // Then reload
@@ -753,6 +812,8 @@ const { count: memberCount } = await supabase
     });
   }
 
-  // Import supabase for RPC calls
-  import { supabase } from '../../lib/supabase';
+  // Initialize client-side functionality after page load
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Community page loaded for community:', communityId);
+  });
 </script>

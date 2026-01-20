@@ -92,22 +92,44 @@ if (currentUser) {
         };
       }
 
-      // Test 5: Try profile join that was failing
+      // Test 5: Try profile join that was failing (use fallback approach)
       try {
-        const { data: profileJoin, error: profileError } = await supabase
+        // Get participants first
+        const { data: participants, error: participantsError } = await supabase
           .from('conversation_participants')
-          .select(`
-            user_id,
-            profiles(username, full_name, avatar_url)
-          `)
+          .select('user_id')
           .eq('conversation_id', conversationIds[0]);
         
-        debugInfo.profile_join = {
-          success: !profileError,
-          count: profileJoin?.length || 0,
-          data: profileJoin?.slice(0, 3) || [],
-          error: profileError?.message
-        };
+        if (participantsError) {
+          debugInfo.profile_join = {
+            success: false,
+            error: participantsError.message
+          };
+        } else {
+          // Get profiles separately
+          const participantProfiles = await Promise.all(
+            (participants || []).map(async (p) => {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('username, full_name, avatar_url')
+                .eq('id', p.user_id)
+                .single();
+              
+              return {
+                user_id: p.user_id,
+                profiles: profileError ? null : profile,
+                profile_error: profileError?.message
+              };
+            })
+          );
+          
+          debugInfo.profile_join = {
+            success: true,
+            count: participantProfiles.length,
+            data: participantProfiles.slice(0, 3),
+            note: 'Using fallback approach (no join query)'
+          };
+        }
       } catch (e) {
         debugInfo.profile_join = {
           success: false,

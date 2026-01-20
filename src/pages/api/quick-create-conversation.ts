@@ -64,13 +64,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .upsert([
         {
           conversation_id: conversationId,
-          user_id: currentUserId,
-          joined_at: new Date().toISOString()
+          user_id: currentUserId
         },
         {
           conversation_id: conversationId,
-          user_id: other_user_id,
-          joined_at: new Date().toISOString()
+          user_id: other_user_id
         }
       ], {
         onConflict: 'conversation_id,user_id'

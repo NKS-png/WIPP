@@ -1,0 +1,247 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Get session from cookies (server-side auth)
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+let currentUser = null;
+if (accessToken && refreshToken) {
+  const { supabase } = await import('../lib/supabase');
+  const { data } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  currentUser = data.session?.user;
+}
+
+// Redirect if not logged in
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+---
+
+<BaseLayout title="Clean Slate Test">
+  <div class="min-h-screen bg-white dark:bg-neutral-900 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 mb-6">
+        <h1 class="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
+          Clean Slate Messaging Setup
+        </h1>
+        <p class="text-neutral-600 dark:text-neutral-400 mb-6">
+          This will delete all existing conversations and create a fresh test conversation with the current user.
+        </p>
+
+        <div id="current-user-info" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+          <div class="text-sm text-blue-800 dark:text-blue-200">
+            <strong>Current User:</strong> <span id="current-user-display">Loading...</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <button 
+            id="ensure-access"
+            class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
+            ✅ Ensure I Have Conversation Access
+          </button>
+          
+          <button 
+            id="fix-participants"
+            class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            🔧 Fix Current Conversation (Add Me as Participant)
+          </button>
+          
+          <button 
+            id="run-clean-slate"
+            class="w-full px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+          >
+            🗑️ Run Clean Slate Setup
+          </button>
+          
+          <button 
+            id="test-messaging"
+            class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+            disabled
+          >
+            ✉️ Test Messaging (Run Clean Slate First)
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Area -->
+      <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+          Results
+        </h2>
+        <pre id="results" class="bg-neutral-100 dark:bg-neutral-900 p-4 rounded-lg text-sm overflow-auto max-h-96 text-neutral-800 dark:text-neutral-200">
+Click "Run Clean Slate Setup" to begin...
+        </pre>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const resultsEl = document.getElementById('results');
+  const testMessagingBtn = document.getElementById('test-messaging') as HTMLButtonElement;
+  const currentUserDisplay = document.getElementById('current-user-display');
+
+  // Load current user info
+  async function loadCurrentUser() {
+    try {
+      const response = await fetch('/api/check-current-user');
+      const data = await response.json();
+      
+      if (data.authenticated && currentUserDisplay) {
+        const profile = data.profile;
+        const displayName = profile?.full_name || profile?.username || data.email;
+        currentUserDisplay.textContent = `${displayName} (${data.user_id})`;
+      } else if (currentUserDisplay) {
+        currentUserDisplay.textContent = 'Not authenticated';
+      }
+    } catch (error) {
+      if (currentUserDisplay) {
+        currentUserDisplay.textContent = 'Error loading user info';
+      }
+    }
+  }
+
+  // Load user info on page load
+  loadCurrentUser();
+
+  async function ensureAccess() {
+    if (!resultsEl) return;
+    
+    resultsEl.textContent = 'Ensuring conversation access...';
+    
+    try {
+      const response = await fetch('/api/ensure-conversation-access', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      resultsEl.textContent = JSON.stringify(data, null, 2);
+      
+      if (data.success && testMessagingBtn) {
+        testMessagingBtn.disabled = false;
+        testMessagingBtn.textContent = '✉️ Test Messaging (Ready!)';
+        
+        // Find recommended conversation and redirect
+        const recommendedConv = data.results?.find(r => r.recommended_conversation)?.recommended_conversation;
+        if (recommendedConv) {
+          setTimeout(() => {
+            window.location.href = `/inbox/${recommendedConv}`;
+          }, 2000);
+        }
+      }
+    } catch (error) {
+      resultsEl.textContent = `Error: ${error.message}`;
+    }
+  }
+
+  async function fixParticipants() {
+    if (!resultsEl) return;
+    
+    resultsEl.textContent = 'Fixing conversation participants...';
+    
+    try {
+      const response = await fetch('/api/fix-conversation-participants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      resultsEl.textContent = JSON.stringify(data, null, 2);
+      
+      if (data.success && testMessagingBtn) {
+        testMessagingBtn.disabled = false;
+        testMessagingBtn.textContent = '✉️ Test Messaging (Ready!)';
+      }
+    } catch (error) {
+      resultsEl.textContent = `Error: ${error.message}`;
+    }
+  }
+
+  async function runCleanSlate() {
+    if (!resultsEl) return;
+    
+    resultsEl.textContent = 'Running clean slate setup...';
+    
+    try {
+      const response = await fetch('/api/run-clean-slate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      resultsEl.textContent = JSON.stringify(data, null, 2);
+      
+      if (data.success && testMessagingBtn) {
+        testMessagingBtn.disabled = false;
+        testMessagingBtn.textContent = '✉️ Test Messaging (Ready!)';
+      }
+    } catch (error) {
+      resultsEl.textContent = `Error: ${error.message}`;
+    }
+  }
+
+  async function testMessaging() {
+    if (!resultsEl) return;
+    
+    resultsEl.textContent = 'Testing messaging APIs...';
+    
+    const conversationId = '12345678-1234-1234-1234-123456789abc';
+    const testMessage = 'Test message from clean slate setup';
+    
+    try {
+      // Test both APIs
+      const [originalResponse, simpleResponse] = await Promise.all([
+        fetch('/api/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            content: testMessage + ' (Original API)'
+          })
+        }),
+        fetch('/api/send-message-simple', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            content: testMessage + ' (Simple API)'
+          })
+        })
+      ]);
+      
+      const originalData = await originalResponse.json();
+      const simpleData = await simpleResponse.json();
+      
+      resultsEl.textContent = `Messaging Test Results:
+
+Original API Result:
+${JSON.stringify(originalData, null, 2)}
+
+Simple API Result:
+${JSON.stringify(simpleData, null, 2)}`;
+      
+    } catch (error) {
+      resultsEl.textContent = `Messaging Test Error: ${error.message}`;
+    }
+  }
+
+  document.getElementById('ensure-access')?.addEventListener('click', ensureAccess);
+  document.getElementById('fix-participants')?.addEventListener('click', fixParticipants);
+  document.getElementById('run-clean-slate')?.addEventListener('click', runCleanSlate);
+  document.getElementById('test-messaging')?.addEventListener('click', testMessaging);
+</script>
+</BaseLayout>

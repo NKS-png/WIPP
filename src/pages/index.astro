@@ -76,7 +76,56 @@ const categories = [
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    
+    <!-- Mobile-only Top Creators & Communities (Horizontal Scroll) -->
+    <div class="lg:hidden mb-8 space-y-6">
+      
+      <!-- Top Creators - Mobile -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
+        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Top Creators</h3>
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+          {creators?.map((creator) => (
+            <a href={`/profile/${creator.id}`} class="flex-shrink-0 flex flex-col items-center gap-2 group min-w-[80px]">
+              <div class="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border border-neutral-100 dark:border-neutral-700">
+                <img src={creator.avatar_url || getEmojiAvatar(creator.username || 'user')} class="w-full h-full object-cover" />
+              </div>
+              <div class="text-center">
+                <p class="text-xs font-bold text-neutral-900 dark:text-white truncate group-hover:text-blue-600 transition-colors max-w-[70px]">
+                  {creator.full_name?.split(' ')[0] || creator.username}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Trending Communities - Mobile -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
+        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Trending Communities</h3>
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+          {communities?.map((c) => (
+            <a href={`/c/${c.id}`} class="flex-shrink-0 flex flex-col items-center gap-2 group min-w-[80px]">
+              <div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                {c.image_url ? <img src={c.image_url} class="w-full h-full object-cover rounded-lg"/> : c.name[0]}
+              </div>
+              <div class="text-center">
+                <p class="text-xs font-bold text-neutral-900 dark:text-white group-hover:underline max-w-[70px] truncate">{c.name}</p>
+                <p class="text-xs text-neutral-500">{c.members?.[0]?.count || 0}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div class="text-center mt-3">
+          <a href="/communities" class="text-xs font-bold text-blue-600 hover:underline">
+            View All →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-12">
     
     <div class="lg:col-span-3 space-y-6 sm:space-y-8 animate-fade-in-up delay-100">
       
@@ -109,6 +158,7 @@ const categories = [
       </div>
     </div>
 
+    <!-- Desktop Sidebar -->
     <aside class="hidden lg:block lg:col-span-1 space-y-8 animate-fade-in-up delay-200">
       
       <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
@@ -153,6 +203,7 @@ const categories = [
 
     </aside>
 
+    </div>
   </div>
 </BaseLayout>
 

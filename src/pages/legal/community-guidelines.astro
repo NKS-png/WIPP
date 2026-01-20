@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Read the community guidelines markdown file with error handling
+let guidelinesContent = '';
+try {
+  const fs = await import('fs/promises');
+  guidelinesContent = await fs.readFile('WIPP_Community_Guidelines.md', 'utf-8');
+} catch (error) {
+  console.warn('Could not read guidelines file, using fallback content:', error.message);
+  guidelinesContent = `# Community Guidelines
+
+## Our Community Values
+
+WIPP is built on respect, creativity, and constructive feedback.
+
+## What We Encourage
+
+- Share your authentic work
+- Provide thoughtful, constructive feedback
+- Support fellow artists
+- Ask questions and learn from others
+
+## What We Don't Allow
+
+- Harassment or bullying
+- Spam or self-promotion
+- Copyright infringement
+- Inappropriate content
+
+## Reporting Issues
+
+If you see content that violates these guidelines, please report it to our moderation team.
+
+## Consequences
+
+Violations may result in content removal, warnings, or account suspension.
+
+*Last updated: December 2024*`;
+}
+
+// Convert markdown to HTML (basic conversion)
+function markdownToHtml(markdown: string): string {
+  return markdown
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-6 text-neutral-900 dark:text-white">$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold mb-4 mt-8 text-neutral-900 dark:text-white">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-medium mb-3 mt-6 text-neutral-900 dark:text-white">$1</h3>')
+    .replace(/^\*\*(.*?)\*\*/gm, '<strong class="font-semibold text-neutral-900 dark:text-white">$1</strong>')
+    .replace(/^\*(.*?)\*/gm, '<em class="italic">$1</em>')
+    .replace(/^- (.*$)/gm, '<li class="mb-2 text-neutral-700 dark:text-neutral-300">$1</li>')
+    .replace(/\n\n/g, '</p><p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/^(?!<[h|l|p])/gm, '<p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/(<li.*<\/li>)/gs, '<ul class="list-disc list-inside mb-4 space-y-2">$1</ul>')
+    .replace(/<\/p>$/g, '');
+}
+
+const htmlContent = markdownToHtml(guidelinesContent);
+---
+
+<BaseLayout title="Community Guidelines">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-4">Community Guidelines</h1>
+      <p class="text-neutral-600 dark:text-neutral-400 text-lg">
+        Last updated: December 2024
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="prose prose-neutral dark:prose-invert max-w-none">
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm">
+        <div set:html={htmlContent}></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mt-12 flex justify-between items-center">
+      <a href="/legal/privacy" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+        ← Privacy Policy
+      </a>
+      <a href="/legal/feedback-disclaimer" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+        Feedback Disclaimer →
+      </a>
+    </div>
+
+  </div>
+</BaseLayout>

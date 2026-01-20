@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Read the legal summary markdown file with error handling
+let summaryContent = '';
+try {
+  const fs = await import('fs/promises');
+  summaryContent = await fs.readFile('WIPP_Legal_Summary.md', 'utf-8');
+} catch (error) {
+  console.warn('Could not read summary file, using fallback content:', error.message);
+  summaryContent = `# Legal Summary
+
+## Plain-English Overview
+
+This page provides a simple explanation of our legal documents.
+
+## Terms & Conditions
+
+Our terms outline how you can use WIPP, what we expect from users, and what you can expect from us.
+
+**Key Points:**
+- You own your content
+- Be respectful to other users
+- We provide the platform "as is"
+- We can update these terms with notice
+
+## Privacy Policy
+
+We explain how we collect, use, and protect your personal information.
+
+**Key Points:**
+- We only collect necessary information
+- We don't sell your data
+- You control your privacy settings
+- We use industry-standard security
+
+## Community Guidelines
+
+Rules for participating in our community.
+
+**Key Points:**
+- Share authentic work
+- Give constructive feedback
+- Respect other artists
+- Report inappropriate content
+
+## Feedback Disclaimer
+
+Information about the nature of feedback on our platform.
+
+**Key Points:**
+- Feedback is subjective opinion
+- You decide what advice to follow
+- We encourage constructive criticism
+- Maintain your artistic vision
+
+*This summary is for convenience only. The full legal documents are the official terms.*`;
+}
+
+// Convert markdown to HTML (basic conversion)
+function markdownToHtml(markdown: string): string {
+  return markdown
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-6 text-neutral-900 dark:text-white">$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold mb-4 mt-8 text-neutral-900 dark:text-white">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-medium mb-3 mt-6 text-neutral-900 dark:text-white">$1</h3>')
+    .replace(/^\*\*(.*?)\*\*/gm, '<strong class="font-semibold text-neutral-900 dark:text-white">$1</strong>')
+    .replace(/^\*(.*?)\*/gm, '<em class="italic">$1</em>')
+    .replace(/^- (.*$)/gm, '<li class="mb-2 text-neutral-700 dark:text-neutral-300">$1</li>')
+    .replace(/\n\n/g, '</p><p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/^(?!<[h|l|p])/gm, '<p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/(<li.*<\/li>)/gs, '<ul class="list-disc list-inside mb-4 space-y-2">$1</ul>')
+    .replace(/<\/p>$/g, '');
+}
+
+const htmlContent = markdownToHtml(summaryContent);
+---
+
+<BaseLayout title="Legal Summary">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-4">Legal Summary</h1>
+      <p class="text-neutral-600 dark:text-neutral-400 text-lg">
+        A plain-English overview of our legal documents
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="prose prose-neutral dark:prose-invert max-w-none">
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm">
+        <div set:html={htmlContent}></div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <a href="/legal/terms" class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl hover:shadow-md transition-shadow">
+        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Terms & Conditions</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">Full legal terms</p>
+      </a>
+      <a href="/legal/privacy" class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl hover:shadow-md transition-shadow">
+        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Privacy Policy</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">How we handle data</p>
+      </a>
+      <a href="/legal/community-guidelines" class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl hover:shadow-md transition-shadow">
+        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Community Guidelines</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">Community rules</p>
+      </a>
+      <a href="/legal/feedback-disclaimer" class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl hover:shadow-md transition-shadow">
+        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Feedback Disclaimer</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">Feedback guidelines</p>
+      </a>
+    </div>
+
+  </div>
+</BaseLayout>

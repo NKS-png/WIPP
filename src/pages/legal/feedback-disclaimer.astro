@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Read the feedback disclaimer markdown file with error handling
+let disclaimerContent = '';
+try {
+  const fs = await import('fs/promises');
+  disclaimerContent = await fs.readFile('WIPP_Feedback_Disclaimer.md', 'utf-8');
+} catch (error) {
+  console.warn('Could not read disclaimer file, using fallback content:', error.message);
+  disclaimerContent = `# Feedback Disclaimer
+
+## Understanding Feedback on WIPP
+
+Feedback on WIPP is provided by community members and should be considered as personal opinions and suggestions.
+
+## Nature of Feedback
+
+- Feedback is subjective and based on individual perspectives
+- Not all feedback may be applicable to your artistic goals
+- Consider the source and context of feedback
+
+## Your Responsibility
+
+- You are responsible for deciding which feedback to implement
+- Always maintain your artistic vision and integrity
+- Use feedback as a tool for growth, not as absolute truth
+
+## Quality of Feedback
+
+We encourage constructive, specific, and respectful feedback that helps artists improve their work.
+
+## Disclaimer
+
+WIPP is not responsible for the content or quality of feedback provided by community members.
+
+*Last updated: December 2024*`;
+}
+
+// Convert markdown to HTML (basic conversion)
+function markdownToHtml(markdown: string): string {
+  return markdown
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-6 text-neutral-900 dark:text-white">$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold mb-4 mt-8 text-neutral-900 dark:text-white">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-medium mb-3 mt-6 text-neutral-900 dark:text-white">$1</h3>')
+    .replace(/^\*\*(.*?)\*\*/gm, '<strong class="font-semibold text-neutral-900 dark:text-white">$1</strong>')
+    .replace(/^\*(.*?)\*/gm, '<em class="italic">$1</em>')
+    .replace(/^- (.*$)/gm, '<li class="mb-2 text-neutral-700 dark:text-neutral-300">$1</li>')
+    .replace(/\n\n/g, '</p><p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/^(?!<[h|l|p])/gm, '<p class="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed">')
+    .replace(/(<li.*<\/li>)/gs, '<ul class="list-disc list-inside mb-4 space-y-2">$1</ul>')
+    .replace(/<\/p>$/g, '');
+}
+
+const htmlContent = markdownToHtml(disclaimerContent);
+---
+
+<BaseLayout title="Feedback Disclaimer">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-neutral-900 dark:text-white mb-4">Feedback Disclaimer</h1>
+      <p class="text-neutral-600 dark:text-neutral-400 text-lg">
+        Last updated: December 2024
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="prose prose-neutral dark:prose-invert max-w-none">
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm">
+        <div set:html={htmlContent}></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mt-12 flex justify-between items-center">
+      <a href="/legal/community-guidelines" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+        ← Community Guidelines
+      </a>
+      <a href="/legal/summary" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+        Legal Summary →
+      </a>
+    </div>
+
+  </div>
+</BaseLayout>

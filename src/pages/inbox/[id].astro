@@ -33,71 +33,56 @@ let isCurrentUserParticipant = false;
 let hasParticipantError = false;
 
 try {
-  // Try the join query first
-  const { data: participantsWithProfiles, error: joinError } = await supabase
+  // Use fallback approach directly (skip the join query that's causing issues)
+  console.log('Using fallback approach for participants to avoid join query issues');
+  
+  const { data: participants, error: participantsError } = await supabase
     .from('conversation_participants')
-    .select('user_id, profiles(username, full_name, avatar_url)')
+    .select('user_id')
     .eq('conversation_id', conversationId);
 
-  if (joinError) {
-    console.log('Join query failed, using fallback approach:', joinError.message);
-    
-    // Fallback: Get participants without join, then get profiles separately
-    try {
-      const { data: participants, error: participantsError } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conversationId);
-
-      if (participantsError) {
-        console.error('Error getting participants:', participantsError.message);
-        hasParticipantError = true;
-      } else if (participants) {
-        const participantPromises = participants.map(async (p) => {
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, full_name, avatar_url')
-              .eq('id', p.user_id)
-              .single();
-            
-            if (profileError) {
-              console.error('Error getting profile for user', p.user_id, ':', profileError.message);
-              return {
-                user_id: p.user_id,
-                profiles: {
-                  username: 'Unknown User',
-                  full_name: 'Unknown User',
-                  avatar_url: null
-                }
-              };
+  if (participantsError) {
+    console.error('Error getting participants:', participantsError.message);
+    hasParticipantError = true;
+  } else if (participants) {
+    const participantPromises = participants.map(async (p) => {
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('username, full_name, avatar_url')
+          .eq('id', p.user_id)
+          .single();
+        
+        if (profileError) {
+          console.error('Error getting profile for user', p.user_id, ':', profileError.message);
+          return {
+            user_id: p.user_id,
+            profiles: {
+              username: 'Unknown User',
+              full_name: 'Unknown User',
+              avatar_url: null
             }
-            
-            return {
-              user_id: p.user_id,
-              profiles: profile
-            };
-          } catch (error) {
-            console.error('Error processing participant:', error.message);
-            return {
-              user_id: p.user_id,
-              profiles: {
-                username: 'Unknown User',
-                full_name: 'Unknown User',
-                avatar_url: null
-              }
-            };
+          };
+        }
+        
+        return {
+          user_id: p.user_id,
+          profiles: profile
+        };
+      } catch (error) {
+        console.error('Error processing participant:', error.message);
+        return {
+          user_id: p.user_id,
+          profiles: {
+            username: 'Unknown User',
+            full_name: 'Unknown User',
+            avatar_url: null
           }
-        });
-
-        allParticipants = await Promise.all(participantPromises);
+        };
       }
-    } catch (error) {
-      console.error('Error in fallback participant query:', error.message);
-      hasParticipantError = true;
-    }
-  } else {
-    allParticipants = participantsWithProfiles;
+    });
+
+    allParticipants = await Promise.all(participantPromises);
   }
 } catch (error) {
   console.error('Error getting participants:', error);
@@ -135,37 +120,42 @@ let messages = [];
 let hasMessageError = false;
 
 try {
-  const { data, error } = await supabase
+  // Use fallback approach to avoid join query issues
+  const { data: simpleMessages, error: simpleError } = await supabase
     .from('messages')
-    .select(`
-      *,
-      sender:profiles!messages_sender_id_fkey(username, full_name, avatar_url)
-    `)
+    .select('*')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
 
-  if (error) {
-    console.error('Error getting messages:', error.message);
+  if (simpleError) {
+    console.error('Error getting messages:', simpleError.message);
     hasMessageError = true;
-    
-    // Try fallback query without join
-    try {
-      const { data: simpleMessages, error: simpleError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-
-      if (simpleError) {
-        console.error('Error getting simple messages:', simpleError.message);
-      } else {
-        messages = simpleMessages || [];
-      }
-    } catch (fallbackError) {
-      console.error('Fallback message query failed:', fallbackError.message);
-    }
   } else {
-    messages = data || [];
+    // Get sender profiles separately for each message
+    const messagesWithSenders = await Promise.all(
+      (simpleMessages || []).map(async (msg) => {
+        try {
+          const { data: senderProfile, error: senderError } = await supabase
+            .from('profiles')
+            .select('username, full_name, avatar_url')
+            .eq('id', msg.sender_id)
+            .single();
+
+          return {
+            ...msg,
+            sender: senderError ? null : senderProfile
+          };
+        } catch (error) {
+          console.error('Error getting sender profile:', error);
+          return {
+            ...msg,
+            sender: null
+          };
+        }
+      })
+    );
+
+    messages = messagesWithSenders;
   }
 } catch (error) {
   console.error('Error getting messages:', error.message);
@@ -206,6 +196,12 @@ try {
           
           {(hasParticipantError || hasMessageError) && (
             <div class="space-y-2">
+              <button 
+                id="fix-access-btn"
+                class="block w-full px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+              >
+                🔧 Fix Access (Add Me to Conversation)
+              </button>
               <a 
                 href="/system-status" 
                 class="block w-full px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
@@ -379,6 +375,39 @@ try {
 </BaseLayout>
 
 <script define:vars={{ conversationId, currentUserId: currentUser?.id }}>
+  // Fix access button functionality
+  const fixAccessBtn = document.getElementById('fix-access-btn');
+  if (fixAccessBtn) {
+    fixAccessBtn.addEventListener('click', async () => {
+      fixAccessBtn.disabled = true;
+      fixAccessBtn.textContent = 'Fixing access...';
+      
+      try {
+        const response = await fetch('/api/fix-conversation-participants', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Reload the page to show the conversation
+          window.location.reload();
+        } else {
+          alert('Failed to fix access: ' + (data.error || 'Unknown error'));
+          fixAccessBtn.disabled = false;
+          fixAccessBtn.textContent = '🔧 Fix Access (Add Me to Conversation)';
+        }
+      } catch (error) {
+        alert('Error fixing access: ' + error.message);
+        fixAccessBtn.disabled = false;
+        fixAccessBtn.textContent = '🔧 Fix Access (Add Me to Conversation)';
+      }
+    });
+  }
+
   // Import modules
   let supabase = null;
   let autoEncryption = null;

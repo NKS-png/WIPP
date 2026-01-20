@@ -86,19 +86,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Add both users as participants
+    // Add both users as participants (without joined_at column)
     const { error: participantsError } = await supabase
       .from('conversation_participants')
       .insert([
         {
           conversation_id: newConversation.id,
-          user_id: currentUserId,
-          joined_at: new Date().toISOString()
+          user_id: currentUserId
         },
         {
           conversation_id: newConversation.id,
-          user_id: other_user_id,
-          joined_at: new Date().toISOString()
+          user_id: other_user_id
         }
       ]);
 

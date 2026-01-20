@@ -173,17 +173,28 @@ console.log('isOwner:', isOwner);
       {userPosts && userPosts.length > 0 ? (
         <div class="space-y-6">
           {userPosts.map(post => (
-            <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm">
+            <a href={`/post/${post.id}`} class="block bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700 transition-all cursor-pointer">
               <div class="flex items-center gap-3 mb-3">
-                <a href={`/profile/${post.user_id}`} class="w-10 h-10 rounded-full bg-neutral-100 overflow-hidden">
+                <div class="w-10 h-10 rounded-full bg-neutral-100 overflow-hidden">
                    <img src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.username || 'user'}`} class="w-full h-full object-cover" />
-                </a>
+                </div>
                 <div>
-                  <a href={`/profile/${post.user_id}`} class="font-bold text-neutral-900 dark:text-white hover:underline block leading-tight">{displayName}</a>
-                  <span class="text-xs text-neutral-500">{new Date(post.created_at).toLocaleDateString()}</span>
-                  {post.communities && (
-                    <span class="text-xs text-neutral-500 ml-2">in c/{post.communities.name}</span>
-                  )}
+                  <div class="font-bold text-neutral-900 dark:text-white block leading-tight">{displayName}</div>
+                  <div class="flex items-center gap-2 text-xs text-neutral-500">
+                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                    {post.communities && (
+                      <>
+                        <span>•</span>
+                        <span class="hover:text-neutral-900 dark:hover:text-white transition-colors">in c/{post.communities.name}</span>
+                      </>
+                    )}
+                    {post.type === 'workshop' && (
+                      <>
+                        <span>•</span>
+                        <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full font-medium">Workshop</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <p class="text-neutral-800 dark:text-neutral-200 text-lg leading-relaxed whitespace-pre-wrap">{post.content}</p>
@@ -217,7 +228,21 @@ console.log('isOwner:', isOwner);
               ) : post.image_url ? (
                 <img src={post.image_url} class="w-full h-auto rounded-lg mt-4" />
               ) : null}
-            </div>
+              <div class="flex items-center gap-4 mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-sm text-neutral-500">
+                <div class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span>Reply</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  <span>Like</span>
+                </div>
+              </div>
+            </a>
           ))}
         </div>
       ) : (

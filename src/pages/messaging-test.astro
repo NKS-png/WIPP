@@ -95,7 +95,35 @@ try {
           </div>
         </div>
 
-        <!-- Test Message Form -->
+          <!-- Test Conversation Creation -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-blue-800 dark:text-blue-200 mb-3">
+              Create Test Conversation
+            </h3>
+            
+            <div class="space-y-4">
+              <select 
+                id="other-user-select"
+                class="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
+              >
+                <option value="">Select another user to chat with</option>
+                {testData.profiles.filter(p => p.id !== currentUser.id).map(profile => (
+                  <option value={profile.id}>
+                    {profile.full_name || profile.username} ({profile.username})
+                  </option>
+                ))}
+              </select>
+              
+              <button 
+                id="create-conversation"
+                class="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+              >
+                Create Test Conversation
+              </button>
+            </div>
+          </div>
+
+          <!-- Test Message Form -->
         <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
           <h3 class="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-3">
             Test Message Sending
@@ -153,6 +181,42 @@ Click a test button to see results...
   const resultsEl = document.getElementById('test-results');
   const conversationIdInput = document.getElementById('test-conversation-id') as HTMLInputElement;
   const messageContentInput = document.getElementById('test-message-content') as HTMLInputElement;
+  const otherUserSelect = document.getElementById('other-user-select') as HTMLSelectElement;
+
+  async function createTestConversation() {
+    if (!resultsEl || !otherUserSelect) return;
+    
+    const otherUserId = otherUserSelect.value;
+    if (!otherUserId) {
+      resultsEl.textContent = 'Please select another user first';
+      return;
+    }
+    
+    resultsEl.textContent = 'Creating test conversation...';
+    
+    try {
+      const response = await fetch('/api/create-test-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          other_user_id: otherUserId
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && conversationIdInput) {
+        conversationIdInput.value = data.conversation_id;
+        resultsEl.textContent = `Conversation created successfully!\nConversation ID: ${data.conversation_id}\n\nYou can now test messaging below.`;
+      } else {
+        resultsEl.textContent = `Create Conversation Result:\n${JSON.stringify(data, null, 2)}`;
+      }
+    } catch (error) {
+      resultsEl.textContent = `Create Conversation Error: ${error.message}`;
+    }
+  }
 
   async function testAPI(endpoint: string, label: string) {
     if (!resultsEl || !conversationIdInput || !messageContentInput) return;
@@ -190,6 +254,8 @@ Click a test button to see results...
       resultsEl.textContent = `${label} Error: ${error.message}`;
     }
   }
+
+  document.getElementById('create-conversation')?.addEventListener('click', createTestConversation);
 
   document.getElementById('test-send-original')?.addEventListener('click', () => {
     testAPI('/api/send-message', 'Original API');

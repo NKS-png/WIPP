@@ -1,0 +1,369 @@
+---
+const { images, title = "Image", className = "" } = Astro.props;
+const imageArray = Array.isArray(images) ? images : [images];
+const hasMultiple = imageArray.length > 1;
+---
+
+<div class={`image-viewer ${className}`} data-images={JSON.stringify(imageArray)}>
+  <div class="relative overflow-hidden rounded-xl bg-stone-200 dark:bg-stone-700 h-full min-h-[200px]">
+    
+    <!-- Main Image Display -->
+    <div class="slider-container overflow-hidden h-full">
+      <div class="slider-track flex transition-transform duration-300 ease-in-out h-full">
+        {imageArray.map((img, index) => (
+          <div class="w-full h-full flex-shrink-0 relative group flex items-center justify-center p-2">
+            <img 
+              src={img} 
+              alt={`${title} - Image ${index + 1}`} 
+              class="max-w-full max-h-full object-contain cursor-pointer" 
+              data-fullscreen-trigger
+            />
+            <!-- Fullscreen button overlay -->
+            <button 
+              class="fullscreen-btn absolute top-3 right-3 bg-stone-800/80 dark:bg-stone-200/80 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-50 dark:text-stone-900 p-2 rounded-xl transition-all opacity-0 group-hover:opacity-100 z-10"
+              data-fullscreen-trigger
+              title="View fullscreen"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+              </svg>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Navigation Controls - Always show if multiple images -->
+    {hasMultiple && (
+      <>
+        <!-- Navigation Arrows -->
+        <button class="slider-prev absolute left-3 top-1/2 -translate-y-1/2 bg-stone-800/90 dark:bg-stone-200/90 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-50 dark:text-stone-900 p-3 rounded-xl transition-all shadow-lg z-20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <button class="slider-next absolute right-3 top-1/2 -translate-y-1/2 bg-stone-800/90 dark:bg-stone-200/90 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-50 dark:text-stone-900 p-3 rounded-xl transition-all shadow-lg z-20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+
+        <!-- Image Counter -->
+        <div class="absolute top-3 left-3 bg-stone-800/90 dark:bg-stone-200/90 text-stone-50 dark:text-stone-900 px-3 py-2 rounded-xl text-sm font-normal shadow-lg z-20">
+          <span class="current-image">1</span> / {imageArray.length}
+        </div>
+
+        <!-- Dots Navigation -->
+        <div class="slider-dots absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-stone-800/50 dark:bg-stone-200/50 px-3 py-2 rounded-xl z-20">
+          {imageArray.map((_, index) => (
+            <button 
+              class={`w-3 h-3 rounded-full transition-colors ${index === 0 ? 'bg-stone-50 dark:bg-stone-200' : 'bg-stone-50/50 dark:bg-stone-200/50'}`} 
+              data-slide={index}
+            ></button>
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
+<!-- Fullscreen Modal -->
+<div class="fullscreen-modal fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center p-4">
+  <div class="relative w-full h-full flex items-center justify-center">
+    <!-- Close Button -->
+    <button class="fullscreen-close absolute top-4 right-4 bg-stone-800/80 hover:bg-stone-800 text-stone-50 p-3 rounded-xl transition-all z-[10000]">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <!-- Fullscreen Image Container -->
+    <div class="fullscreen-slider-container w-full h-full flex items-center justify-center overflow-hidden">
+      <div class="fullscreen-slider-track flex transition-transform duration-300 ease-in-out h-full">
+        {imageArray.map((img, index) => (
+          <div class="w-screen h-full flex-shrink-0 flex items-center justify-center px-16">
+            <img 
+              src={img} 
+              alt={`${title} - Image ${index + 1}`} 
+              class="max-w-full max-h-full object-contain" 
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {hasMultiple && (
+      <>
+        <!-- Fullscreen Navigation -->
+        <button class="fullscreen-prev absolute left-4 top-1/2 -translate-y-1/2 bg-stone-800/80 hover:bg-stone-800 text-stone-50 p-3 rounded-xl transition-all z-[10000]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <button class="fullscreen-next absolute right-4 top-1/2 -translate-y-1/2 bg-stone-800/80 hover:bg-stone-800 text-stone-50 p-3 rounded-xl transition-all z-[10000]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+
+        <!-- Fullscreen Counter -->
+        <div class="absolute top-4 left-4 bg-stone-800/80 text-stone-50 px-4 py-2 rounded-xl font-normal z-[10000]">
+          <span class="fullscreen-current">1</span> / {imageArray.length}
+        </div>
+
+        <!-- Fullscreen Thumbnails -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-full overflow-x-auto px-4 z-[10000]">
+          {imageArray.map((img, index) => (
+            <button 
+              class={`thumbnail-btn flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${index === 0 ? 'border-stone-50' : 'border-stone-50/30'}`}
+              data-thumbnail={index}
+            >
+              <img src={img} alt={`Thumbnail ${index + 1}`} class="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
+<script>
+  // Enhanced Image Viewer with Fullscreen
+  document.querySelectorAll('.image-viewer').forEach(viewer => {
+    const track = viewer.querySelector('.slider-track');
+    const prevBtn = viewer.querySelector('.slider-prev');
+    const nextBtn = viewer.querySelector('.slider-next');
+    const dots = viewer.querySelectorAll('.slider-dots button');
+    const currentCounter = viewer.querySelector('.current-image');
+    const fullscreenTriggers = viewer.querySelectorAll('[data-fullscreen-trigger]');
+    
+    // Fullscreen elements
+    const modal = document.querySelector('.fullscreen-modal');
+    const fullscreenTrack = modal?.querySelector('.fullscreen-slider-track');
+    const fullscreenPrev = modal?.querySelector('.fullscreen-prev');
+    const fullscreenNext = modal?.querySelector('.fullscreen-next');
+    const fullscreenClose = modal?.querySelector('.fullscreen-close');
+    const fullscreenCounter = modal?.querySelector('.fullscreen-current');
+    const thumbnails = modal?.querySelectorAll('.thumbnail-btn');
+    
+    const images = JSON.parse(viewer.getAttribute('data-images') || '[]');
+    let currentIndex = 0;
+
+    function updateSlider() {
+      if (track) {
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      }
+      if (currentCounter) {
+        currentCounter.textContent = (currentIndex + 1).toString();
+      }
+      
+      // Update dots
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('bg-stone-50', index === currentIndex);
+        dot.classList.toggle('dark:bg-stone-200', index === currentIndex);
+        dot.classList.toggle('bg-stone-50/50', index !== currentIndex);
+        dot.classList.toggle('dark:bg-stone-200/50', index !== currentIndex);
+      });
+    }
+
+    function updateFullscreen() {
+      if (fullscreenTrack) {
+        fullscreenTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+      }
+      if (fullscreenCounter) {
+        fullscreenCounter.textContent = (currentIndex + 1).toString();
+      }
+      
+      // Update thumbnails
+      thumbnails?.forEach((thumb, index) => {
+        thumb.classList.toggle('border-stone-50', index === currentIndex);
+        thumb.classList.toggle('border-stone-50/30', index !== currentIndex);
+      });
+    }
+
+    function goToSlide(index) {
+      currentIndex = index;
+      updateSlider();
+      updateFullscreen();
+    }
+
+    function nextSlide() {
+      currentIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+      updateSlider();
+      updateFullscreen();
+    }
+
+    function prevSlide() {
+      currentIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+      updateSlider();
+      updateFullscreen();
+    }
+
+    // Regular slider navigation
+    prevBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      prevSlide();
+    });
+    
+    nextBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      nextSlide();
+    });
+    
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        goToSlide(index);
+      });
+    });
+
+    // Fullscreen functionality
+    fullscreenTriggers.forEach(trigger => {
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Hide navbar and other UI elements
+        const navbar = document.querySelector('nav');
+        const body = document.body;
+        
+        if (navbar) navbar.style.display = 'none';
+        body.style.overflow = 'hidden';
+        
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+        updateFullscreen();
+        
+        // Ensure modal is above everything
+        if (modal) {
+          modal.style.position = 'fixed';
+          modal.style.top = '0';
+          modal.style.left = '0';
+          modal.style.width = '100vw';
+          modal.style.height = '100vh';
+          modal.style.zIndex = '9999';
+        }
+      });
+    });
+
+    function closeFullscreen() {
+      const navbar = document.querySelector('nav');
+      const body = document.body;
+      
+      // Restore navbar and scrolling
+      if (navbar) navbar.style.display = '';
+      body.style.overflow = '';
+      
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+    }
+
+    fullscreenClose?.addEventListener('click', closeFullscreen);
+
+    // Fullscreen navigation
+    fullscreenPrev?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      prevSlide();
+    });
+    
+    fullscreenNext?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      nextSlide();
+    });
+    
+    thumbnails?.forEach((thumb, index) => {
+      thumb.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        goToSlide(index);
+      });
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+        closeFullscreen();
+      }
+    });
+
+    // Close on background click
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeFullscreen();
+      }
+    });
+
+    // Keyboard navigation in fullscreen
+    document.addEventListener('keydown', (e) => {
+      if (modal && !modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevSlide();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nextSlide();
+        }
+      }
+    });
+  });
+</script>
+
+<style>
+  /* Ensure fullscreen modal is above everything */
+  .fullscreen-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Hide scrollbars when fullscreen is active */
+  body:has(.fullscreen-modal:not(.hidden)) {
+    overflow: hidden !important;
+  }
+  
+  /* Ensure navigation controls are visible on hover */
+  .image-viewer:hover .slider-prev,
+  .image-viewer:hover .slider-next {
+    opacity: 1;
+  }
+  
+  .slider-prev,
+  .slider-next {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+  
+  .slider-prev:hover,
+  .slider-next:hover {
+    opacity: 1;
+  }
+  
+  /* Make sure dots are always visible for multiple images */
+  .slider-dots {
+    opacity: 0.9;
+  }
+  
+  .image-viewer:hover .slider-dots {
+    opacity: 1;
+  }
+
+  /* Ensure proper image centering in fullscreen */
+  .fullscreen-slider-track {
+    width: calc(100vw * var(--image-count, 1));
+  }
+  
+  /* Prevent image overflow in regular view */
+  .image-viewer img {
+    max-height: 100%;
+    width: auto;
+  }
+</style>

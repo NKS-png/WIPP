@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
+import UnifiedSearch from './UnifiedSearch.astro';
 import { supabase } from '../lib/supabase';
 
 const { cookies } = Astro;
@@ -36,9 +37,9 @@ const displayName = profile?.username || profile?.full_name || user?.email?.spli
 const displayInitial = displayName.charAt(0).toUpperCase();
 ---
 
-<nav class="w-full sticky top-0 z-[60] transition-colors duration-300 px-4 pt-2">
-  <div class="bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-neutral-100 dark:border-neutral-800 rounded-2xl shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
+<nav class="w-full sticky top-0 z-[60] transition-colors duration-300 px-6 pt-4">
+  <div class="bg-stone-50/95 dark:bg-stone-900/95 backdrop-blur-sm border border-stone-200 dark:border-stone-700 rounded-2xl">
+    <div class="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
     
     <div class="flex items-center gap-8">
       <a href="/" class="flex items-center gap-2 group relative z-[70]">
@@ -46,13 +47,13 @@ const displayInitial = displayName.charAt(0).toUpperCase();
         <img src="/darklogo.png" alt="Logo" class="h-16 w-auto hidden dark:block group-hover:scale-105 transition-transform object-contain" />
       </a>
       
-      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-        <a href="/explore" class="hover:text-neutral-900 dark:hover:text-white transition-colors">Explore</a>
-        <a href="/about" class="hover:text-neutral-900 dark:hover:text-white transition-colors">About</a>
-        <a href="/services" class="hover:text-neutral-900 dark:hover:text-white transition-colors">Services</a>
-        <a href="/communities" class="hover:text-neutral-900 dark:hover:text-white transition-colors">Communities</a>
-        {session && (
-          <a href="/inbox" class="hover:text-neutral-900 dark:hover:text-white transition-colors relative" id="inbox-link">
+      <div class="hidden md:flex items-center gap-8 text-base font-normal text-stone-600 dark:text-stone-400">
+        <a href="/explore" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Explore</a>
+        <a href="/about" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">About</a>
+        <a href="/support" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Support</a>
+        <a href="/communities" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Communities</a>
+        {session && !Astro.url.pathname.includes('/inbox') && (
+          <a href="/inbox" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors relative" id="inbox-link">
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -66,40 +67,13 @@ const displayInitial = displayName.charAt(0).toUpperCase();
     </div>
 
     <div class="flex-1 max-w-md hidden md:block relative">
-      <div class="relative group">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-4 w-4 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        </div>
-        <input 
-            type="text" 
-            id="navbar-search"
-            placeholder="Search users..." 
-            class="block w-full pl-10 pr-3 py-2 border border-neutral-200 dark:border-neutral-800 rounded-full bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-black focus:ring-1 focus:ring-neutral-900 dark:focus:ring-neutral-700 sm:text-sm transition-all" 
-            autocomplete="off"
-        />
-        
-        <!-- Search Results Dropdown -->
-        <div id="search-results" class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl max-h-80 overflow-y-auto hidden z-[80]">
-          <div id="search-loading" class="hidden p-4 text-center text-neutral-500">
-            <div class="animate-spin w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full mx-auto mb-2"></div>
-            Searching...
-          </div>
-          <div id="search-empty" class="hidden p-4 text-center text-neutral-500 text-sm">
-            No users found
-          </div>
-          <div id="search-list" class="py-2">
-            <!-- Search results will be inserted here -->
-          </div>
-        </div>
-      </div>
+      <UnifiedSearch showInNavbar={true} />
     </div>
 
     <div class="flex items-center gap-3">
       <ThemeToggle />
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white relative z-[70]">
+      <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-stone-800 dark:text-stone-200 relative z-[70]">
         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
@@ -108,26 +82,26 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       <div class="hidden md:flex items-center gap-4">
         {session ? (
           <>
-            <a href="/post" class="bg-neutral-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-              Post Work
+            <a href="/post" class="bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 text-base font-normal px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+              Share Work
             </a>
             
             <div class="relative group">
               <button class="flex items-center focus:outline-none">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" class="h-9 w-9 rounded-full object-cover border border-neutral-200 dark:border-neutral-800" />
+                  <img src={profile.avatar_url} alt="Profile" class="h-10 w-10 rounded-xl object-cover border border-stone-300 dark:border-stone-600" />
                 ) : (
-                  <div class="h-9 w-9 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black flex items-center justify-center text-sm font-bold">
+                  <div class="h-10 w-10 rounded-xl bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 flex items-center justify-center text-base font-normal">
                     {displayInitial}
                   </div>
                 )}
               </button>
               
               <div class="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-2 group-hover:translate-y-0 z-[70]">
-                <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-                  <div class="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
-                    <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Signed in as</p>
-                    <p class="text-sm font-bold text-neutral-900 dark:text-white truncate">{displayName}</p>
+                <div class="bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden">
+                  <div class="px-4 py-3 border-b border-stone-200 dark:border-stone-700">
+                    <p class="text-xs font-normal text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">Signed in as</p>
+                    <p class="text-sm font-normal text-stone-800 dark:text-stone-200 truncate">{displayName}</p>
                   </div>
                   
                   <!-- Encryption Status -->
@@ -156,11 +130,11 @@ const displayInitial = displayName.charAt(0).toUpperCase();
                   </div>
                   
                   <div class="py-1">
-                    <a href={`/profile/${user.id}`} class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Your Profile</a>
-                    <a href="/settings" class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Settings</a>
-                    <a href="/communities" class="block px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white">Communities</a>
+                    <a href={`/profile/${user.id}`} class="block px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-700 dark:text-stone-200">Your Profile</a>
+                    <a href="/settings" class="block px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-700 dark:text-stone-200">Settings</a>
+                    <a href="/communities" class="block px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-700 dark:text-stone-200">Communities</a>
                   </div>
-                  <div class="border-t border-neutral-100 dark:border-neutral-800 py-1">
+                  <div class="border-t border-stone-200 dark:border-stone-700 py-1">
                     <form action="/api/auth/signout" method="post">
                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10">Sign out</button>
                     </form>
@@ -171,8 +145,8 @@ const displayInitial = displayName.charAt(0).toUpperCase();
           </>
         ) : (
           <>
-            <a href="/login" class="text-sm font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">Log In</a>
-            <a href="/signup" class="text-sm font-bold bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2 rounded-full hover:opacity-90 transition-opacity">Sign Up</a>
+            <a href="/login" class="text-base font-normal text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200">Log In</a>
+            <a href="/signup" class="text-base font-normal bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Sign Up</a>
           </>
         )}
       </div>
@@ -180,24 +154,29 @@ const displayInitial = displayName.charAt(0).toUpperCase();
   </div>
 </nav>
 
-<div id="mobile-menu" class="fixed inset-0 z-[9999] md:hidden bg-white dark:bg-black transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col" data-state="closed">
+<div id="mobile-menu" class="fixed inset-0 z-[9999] md:hidden bg-stone-50 dark:bg-stone-900 transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col" data-state="closed">
   
   <div class="h-24 px-6 flex items-center justify-between">
-      <span class="text-lg font-bold tracking-tight text-neutral-400 uppercase">Menu</span>
-      <button id="close-mobile-menu" class="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white hover:scale-105 transition-transform">
+      <span class="text-lg font-normal tracking-normal text-stone-500 dark:text-stone-400 uppercase">Menu</span>
+      <button id="close-mobile-menu" class="p-3 bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
   </div>
 
   <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col">
-    <nav class="flex flex-col gap-6">
-      <a href="/explore" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Explore</a>
-      <a href="/about" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">About</a>
-      <a href="/services" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Services</a>
-      <a href="/communities" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter">Community</a>
-      {session && (
-        <a href="/inbox" class="mobile-link text-5xl font-bold text-neutral-900 dark:text-white hover:text-neutral-500 transition-colors tracking-tighter relative">
-          📨 Inbox
+    <!-- Mobile Search -->
+    <div class="mb-6">
+      <UnifiedSearch placeholder="Search..." maxResults={10} />
+    </div>
+    
+    <nav class="flex flex-col gap-8">
+      <a href="/explore" class="mobile-link text-4xl font-normal text-stone-800 dark:text-stone-200 hover:text-stone-600 dark:hover:text-stone-400 transition-colors">Explore</a>
+      <a href="/about" class="mobile-link text-4xl font-normal text-stone-800 dark:text-stone-200 hover:text-stone-600 dark:hover:text-stone-400 transition-colors">About</a>
+      <a href="/support" class="mobile-link text-4xl font-normal text-stone-800 dark:text-stone-200 hover:text-stone-600 dark:hover:text-stone-400 transition-colors">Support</a>
+      <a href="/communities" class="mobile-link text-4xl font-normal text-stone-800 dark:text-stone-200 hover:text-stone-600 dark:hover:text-stone-400 transition-colors">Community</a>
+      {session && !Astro.url.pathname.includes('/inbox') && (
+        <a href="/inbox" class="mobile-link text-4xl font-normal text-stone-800 dark:text-stone-200 hover:text-stone-600 dark:hover:text-stone-400 transition-colors relative">
+          Inbox
           <span id="mobile-unread-badge" class="hidden absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold notification-dot">
             0
           </span>
@@ -206,33 +185,33 @@ const displayInitial = displayName.charAt(0).toUpperCase();
     </nav>
 
     <div class="mt-auto pt-8 pb-8">
-      <hr class="border-neutral-200 dark:border-neutral-800 mb-8" />
+      <hr class="border-stone-300 dark:border-stone-700 mb-8" />
       
       {session ? (
         <div class="flex flex-col gap-6">
           <div class="flex items-center gap-4">
-            <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} class="w-14 h-14 rounded-full bg-neutral-200 border border-neutral-200 dark:border-neutral-800" />
+            <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} class="w-14 h-14 bg-stone-300 border border-stone-400 dark:border-stone-600" />
             <div>
-              <p class="font-bold text-xl text-neutral-900 dark:text-white">{displayName}</p>
-              <a href={`/profile/${user.id}`} class="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white">View Profile &rarr;</a>
+              <p class="font-normal text-xl text-stone-800 dark:text-stone-200">{displayName}</p>
+              <a href={`/profile/${user.id}`} class="text-sm text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200">View Profile →</a>
             </div>
           </div>
           
           <div class="grid grid-cols-2 gap-3">
-              <a href="/settings" class="text-center py-4 rounded-2xl bg-neutral-100 dark:bg-neutral-900 font-bold text-neutral-900 dark:text-white">Settings</a>
+              <a href="/settings" class="text-center py-4 bg-stone-200 dark:bg-stone-800 font-normal text-stone-800 dark:text-stone-200">Settings</a>
               <form action="/api/auth/signout" method="post" class="w-full">
-                <button type="submit" class="w-full h-full text-center py-4 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-600 font-bold">Sign Out</button>
+                <button type="submit" class="w-full h-full text-center py-4 bg-red-50 dark:bg-red-900/10 text-red-600 font-normal">Sign Out</button>
               </form>
           </div>
 
-          <a href="/post" class="w-full text-center py-5 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xl rounded-2xl shadow-xl hover:scale-[1.02] transition-transform">
-            Post New Work
+          <a href="/post" class="w-full text-center py-5 bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 font-normal text-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+            Share New Work
           </a>
         </div>
       ) : (
         <div class="flex flex-col gap-4">
-          <a href="/login" class="w-full text-center py-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 font-bold text-neutral-900 dark:text-white text-xl">Log In</a>
-          <a href="/signup" class="w-full text-center py-5 rounded-2xl bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xl shadow-xl">Sign Up Free</a>
+          <a href="/login" class="w-full text-center py-5 border-2 border-stone-300 dark:border-stone-700 font-normal text-stone-800 dark:text-stone-200 text-xl">Log In</a>
+          <a href="/signup" class="w-full text-center py-5 bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 font-normal text-xl">Sign Up Free</a>
         </div>
       )}
     </div>
@@ -365,91 +344,6 @@ const displayInitial = displayName.charAt(0).toUpperCase();
     }
   }
 
-  // --- USER SEARCH FUNCTIONALITY ---
-  const searchInput = document.getElementById('navbar-search');
-  const searchResults = document.getElementById('search-results');
-  const searchLoading = document.getElementById('search-loading');
-  const searchEmpty = document.getElementById('search-empty');
-  const searchList = document.getElementById('search-list');
-  let searchTimeout;
-
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.trim();
-      
-      clearTimeout(searchTimeout);
-      
-      if (query.length < 2) {
-        searchResults.classList.add('hidden');
-        return;
-      }
-      
-      searchTimeout = setTimeout(() => {
-        performSearch(query);
-      }, 300);
-    });
-
-    searchInput.addEventListener('focus', () => {
-      if (searchInput.value.trim().length >= 2) {
-        searchResults.classList.remove('hidden');
-      }
-    });
-
-    // Hide search results when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.classList.add('hidden');
-      }
-    });
-  }
-
-  async function performSearch(query) {
-    if (!searchInput) return;
-    
-    searchResults.classList.remove('hidden');
-    searchLoading.classList.remove('hidden');
-    searchEmpty.classList.add('hidden');
-    searchList.innerHTML = '';
-
-    try {
-      const response = await fetch(`/api/search-users?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
-
-      searchLoading.classList.add('hidden');
-
-      if (data.users && data.users.length > 0) {
-        searchEmpty.classList.add('hidden');
-        
-        data.users.forEach(user => {
-          const userItem = document.createElement('a');
-          userItem.href = `/profile/${user.id}`;
-          userItem.className = 'flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors';
-          userItem.innerHTML = `
-            <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-full object-cover" />
-            <div class="flex-1 min-w-0">
-              <div class="font-medium text-neutral-900 dark:text-white truncate">${user.displayName}</div>
-              <div class="text-xs text-neutral-500 truncate">@${user.username}</div>
-            </div>
-          `;
-          
-          userItem.addEventListener('click', () => {
-            searchResults.classList.add('hidden');
-            searchInput.value = '';
-          });
-          
-          searchList.appendChild(userItem);
-        });
-      } else {
-        searchEmpty.classList.remove('hidden');
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      searchLoading.classList.add('hidden');
-      searchEmpty.classList.remove('hidden');
-      searchEmpty.textContent = 'Search failed. Please try again.';
-    }
-  }
-
   // Notification sound
   function playNotificationSound() {
     try {
@@ -509,8 +403,8 @@ const displayInitial = displayName.charAt(0).toUpperCase();
   // Update on page load
   updateUnreadCount();
 
-  // Update every 10 seconds
-  setInterval(updateUnreadCount, 10000);
+  // Update every 5 seconds for more responsive updates
+  setInterval(updateUnreadCount, 5000);
 
   // Update on new messages via realtime subscription
   supabase

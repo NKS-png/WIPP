@@ -1,0 +1,97 @@
+---
+/**
+ * Simple test page for responsive utilities
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ResponsiveContainer from '../components/ResponsiveContainer.astro';
+import TouchButton from '../components/TouchButton.astro';
+---
+
+<BaseLayout title="Responsive Test">
+  <ResponsiveContainer maxWidth="lg" padding="md">
+    <div class="space-y-6">
+      <h1 class="text-3xl font-bold text-center">Responsive Utilities Test</h1>
+      
+      <!-- Viewport Info Display -->
+      <div class="mobile-card p-6 bg-white dark:bg-stone-800 rounded-xl shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Current Viewport</h2>
+        <div id="viewport-display" class="text-sm space-y-2">
+          <div>Screen width: <span id="screen-width" class="font-mono">-</span>px</div>
+          <div>Is mobile: <span id="is-mobile" class="font-mono">-</span></div>
+          <div>Current breakpoint: <span id="breakpoint" class="font-mono">-</span></div>
+        </div>
+      </div>
+
+      <!-- Touch Button Test -->
+      <div class="mobile-card p-6 bg-white dark:bg-stone-800 rounded-xl shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Touch Buttons</h2>
+        <div class="flex flex-wrap gap-4">
+          <TouchButton variant="primary" size="sm">Small</TouchButton>
+          <TouchButton variant="secondary" size="md">Medium</TouchButton>
+          <TouchButton variant="ghost" size="lg">Large</TouchButton>
+        </div>
+      </div>
+
+      <!-- Mobile Visibility Test -->
+      <div class="mobile-card p-6 bg-white dark:bg-stone-800 rounded-xl shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Visibility Test</h2>
+        <div class="space-y-3">
+          <div class="mobile-only p-3 bg-red-100 dark:bg-red-900/20 rounded">
+            📱 Mobile only (visible below 768px)
+          </div>
+          <div class="desktop-only p-3 bg-blue-100 dark:bg-blue-900/20 rounded">
+            🖥️ Desktop only (visible 768px and above)
+          </div>
+        </div>
+      </div>
+
+      <!-- Responsive Grid -->
+      <div class="mobile-card p-6 bg-white dark:bg-stone-800 rounded-xl shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Responsive Grid</h2>
+        <div class="grid-responsive">
+          <div class="p-4 bg-stone-100 dark:bg-stone-700 rounded text-center">1</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-700 rounded text-center">2</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-700 rounded text-center">3</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-700 rounded text-center">4</div>
+        </div>
+      </div>
+    </div>
+  </ResponsiveContainer>
+</BaseLayout>
+
+<script>
+  // Simple viewport detection test
+  function updateViewportInfo() {
+    const width = window.innerWidth;
+    const isMobile = width < 768;
+    
+    let breakpoint = 'xs';
+    if (width >= 1536) breakpoint = '2xl';
+    else if (width >= 1280) breakpoint = 'xl';
+    else if (width >= 1024) breakpoint = 'lg';
+    else if (width >= 768) breakpoint = 'md';
+    else if (width >= 640) breakpoint = 'sm';
+    
+    document.getElementById('screen-width')!.textContent = width.toString();
+    document.getElementById('is-mobile')!.textContent = isMobile.toString();
+    document.getElementById('breakpoint')!.textContent = breakpoint;
+  }
+
+  // Update on load and resize
+  updateViewportInfo();
+  window.addEventListener('resize', updateViewportInfo);
+</script>
+
+<style>
+  .space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
+  
+  .space-y-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
+</style>

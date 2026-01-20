@@ -1,0 +1,295 @@
+---
+/**
+ * Test page for verifying UnifiedSearch integration in Navbar
+ * This page tests the mobile responsiveness and empty results handling
+ */
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Integration Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9fafb;
+    }
+    
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .test-section {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .test-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1f2937;
+    }
+    
+    .test-description {
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    
+    .test-checklist {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .test-checklist li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .test-checklist li:last-child {
+      border-bottom: none;
+    }
+    
+    .test-checkbox {
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid #d1d5db;
+      border-radius: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .test-checkbox.checked {
+      background-color: #10b981;
+      border-color: #10b981;
+      color: white;
+    }
+    
+    .mobile-test {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .mobile-test-title {
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 767px) {
+      .test-container {
+        padding: 1rem;
+      }
+      
+      .mobile-test {
+        background: #dcfce7;
+        border-color: #16a34a;
+      }
+      
+      .mobile-test-title {
+        color: #166534;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Import the Navbar component to test search integration -->
+  <div id="navbar-container">
+    <!-- This will be replaced with the actual Navbar component -->
+  </div>
+
+  <div class="test-container">
+    <div class="test-section">
+      <h1 class="test-title">UnifiedSearch Integration Test</h1>
+      <p class="test-description">
+        This page tests the integration of the UnifiedSearch component into the Navbar, 
+        focusing on mobile responsiveness and empty results handling.
+      </p>
+      
+      <div class="mobile-test">
+        <div class="mobile-test-title">📱 Mobile Test Status</div>
+        <p>This box changes color based on screen size. Green = Mobile view active.</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Desktop Search Tests</h2>
+      <p class="test-description">Test these features on desktop (screen width > 768px):</p>
+      
+      <ul class="test-checklist">
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search input is visible in navbar center</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search results appear as dropdown below input</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Clear button appears when typing</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Results are grouped by content type (Users, Communities, Posts, Projects)</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Empty results show helpful suggestions with action links</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Clicking outside closes search results</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Escape key closes search results</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Mobile Search Tests</h2>
+      <p class="test-description">Test these features on mobile (screen width ≤ 767px):</p>
+      
+      <ul class="test-checklist">
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search is available in mobile menu</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search results appear as full-screen overlay</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Mobile header with "Search Results" title and close button</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Close button has minimum 44px touch target</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Result items have minimum 44px touch targets</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Body scroll is prevented when search overlay is open</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Empty results show enhanced suggestions with touch-friendly action buttons</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Touch Interface Tests</h2>
+      <p class="test-description">Verify touch interface compliance:</p>
+      
+      <ul class="test-checklist">
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>All interactive elements are at least 44px in height and width</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Adjacent interactive elements have at least 8px spacing</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Touch feedback is provided (visual response on tap)</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search input prevents zoom on iOS (16px font size)</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Empty Results Handling</h2>
+      <p class="test-description">Test empty results scenarios:</p>
+      
+      <ul class="test-checklist">
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Search for "zzzznonexistent" shows empty state</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>Empty state includes helpful suggestion text</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>"Explore Content" link works and is touch-friendly</span>
+        </li>
+        <li>
+          <div class="test-checkbox" onclick="toggleCheck(this)"></div>
+          <span>"Browse Communities" link works and is touch-friendly</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Test Instructions</h2>
+      <p class="test-description">
+        1. <strong>Desktop Testing:</strong> Use browser dev tools to test desktop view (width > 768px)<br>
+        2. <strong>Mobile Testing:</strong> Use browser dev tools mobile simulation or actual mobile device<br>
+        3. <strong>Search Testing:</strong> Try searches like "test", "user", "community", and "zzzznonexistent"<br>
+        4. <strong>Touch Testing:</strong> Use mobile device or browser touch simulation<br>
+        5. <strong>Check off items</strong> as you verify they work correctly
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function toggleCheck(checkbox) {
+      checkbox.classList.toggle('checked');
+      if (checkbox.classList.contains('checked')) {
+        checkbox.innerHTML = '✓';
+      } else {
+        checkbox.innerHTML = '';
+      }
+    }
+
+    // Add some basic responsive testing
+    function updateMobileStatus() {
+      const mobileTest = document.querySelector('.mobile-test');
+      if (window.innerWidth <= 767) {
+        mobileTest.style.background = '#dcfce7';
+        mobileTest.style.borderColor = '#16a34a';
+        mobileTest.querySelector('.mobile-test-title').style.color = '#166534';
+        mobileTest.querySelector('.mobile-test-title').textContent = '📱 Mobile View Active';
+      } else {
+        mobileTest.style.background = '#fef3c7';
+        mobileTest.style.borderColor = '#f59e0b';
+        mobileTest.querySelector('.mobile-test-title').style.color = '#92400e';
+        mobileTest.querySelector('.mobile-test-title').textContent = '🖥️ Desktop View Active';
+      }
+    }
+
+    window.addEventListener('resize', updateMobileStatus);
+    updateMobileStatus();
+  </script>
+</body>
+</html>

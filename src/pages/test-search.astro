@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import UnifiedSearch from '../components/UnifiedSearch.astro';
+---
+
+<BaseLayout title="Test Unified Search">
+  <div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-8">Unified Search Test</h1>
+    
+    <div class="space-y-8">
+      <!-- Navbar-style search -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Navbar Search (Desktop)</h2>
+        <div class="max-w-md">
+          <UnifiedSearch showInNavbar={true} />
+        </div>
+      </div>
+      
+      <!-- Full-width search -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Full-width Search</h2>
+        <UnifiedSearch placeholder="Search anything..." maxResults={15} />
+      </div>
+      
+      <!-- Mobile-optimized search -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Mobile Search</h2>
+        <div class="max-w-sm">
+          <UnifiedSearch placeholder="Mobile search..." maxResults={8} />
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-12 p-6 bg-stone-100 dark:bg-stone-800 rounded-lg">
+      <h3 class="text-lg font-semibold mb-4">Test Instructions</h3>
+      <ul class="space-y-2 text-sm">
+        <li>• Type at least 2 characters to trigger search</li>
+        <li>• Results should be organized by content type (Users, Communities, Posts, Projects)</li>
+        <li>• Click on any result to navigate to that page</li>
+        <li>• Use arrow keys to navigate results, Enter to select</li>
+        <li>• Press Escape to close search results</li>
+        <li>• Search should work on both desktop and mobile</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

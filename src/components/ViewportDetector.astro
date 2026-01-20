@@ -1,0 +1,182 @@
+---
+/**
+ * ViewportDetector Component
+ * Provides viewport detection and mobile device identification
+ * Adds CSS classes and data attributes to the document for responsive styling
+ */
+---
+
+<script>
+  import { 
+    isMobileViewport, 
+    isMobileDevice, 
+    isTouchDevice, 
+    getCurrentBreakpoint,
+    viewportObserver,
+    BREAKPOINTS 
+  } from '../lib/responsive';
+
+  class ViewportDetector {
+    private documentElement: HTMLElement;
+    private unsubscribe: (() => void) | null = null;
+
+    constructor() {
+      this.documentElement = document.documentElement;
+      this.init();
+    }
+
+    private init() {
+      // Set initial classes and attributes
+      this.updateViewportClasses();
+      this.updateDeviceClasses();
+      
+      // Subscribe to viewport changes
+      if (viewportObserver) {
+        this.unsubscribe = viewportObserver.subscribe((breakpoint, isMobile) => {
+          this.updateViewportClasses();
+        });
+      }
+
+      // Listen for orientation changes
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          this.updateViewportClasses();
+        }, 100);
+      });
+
+      // Listen for resize events (fallback)
+      let resizeTimeout: number;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = window.setTimeout(() => {
+          this.updateViewportClasses();
+        }, 100);
+      });
+    }
+
+    private updateViewportClasses() {
+      const currentBreakpoint = getCurrentBreakpoint();
+      const isMobile = isMobileViewport();
+      
+      // Remove all breakpoint classes
+      Object.keys(BREAKPOINTS).forEach(bp => {
+        this.documentElement.classList.remove(`viewport-${bp}`);
+      });
+      
+      // Add current breakpoint class
+      this.documentElement.classList.add(`viewport-${currentBreakpoint}`);
+      
+      // Add mobile/desktop classes
+      this.documentElement.classList.toggle('viewport-mobile', isMobile);
+      this.documentElement.classList.toggle('viewport-desktop', !isMobile);
+      
+      // Set data attributes for CSS targeting
+      this.documentElement.setAttribute('data-viewport', currentBreakpoint);
+      this.documentElement.setAttribute('data-mobile', isMobile.toString());
+      
+      // Set CSS custom properties for JavaScript access
+      this.documentElement.style.setProperty('--viewport-width', `${window.innerWidth}px`);
+      this.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+      this.documentElement.style.setProperty('--is-mobile', isMobile ? '1' : '0');
+    }
+
+    private updateDeviceClasses() {
+      const isMobile = isMobileDevice();
+      const isTouch = isTouchDevice();
+      
+      // Device type classes
+      this.documentElement.classList.toggle('device-mobile', isMobile);
+      this.documentElement.classList.toggle('device-desktop', !isMobile);
+      this.documentElement.classList.toggle('device-touch', isTouch);
+      this.documentElement.classList.toggle('device-no-touch', !isTouch);
+      
+      // Set data attributes
+      this.documentElement.setAttribute('data-device-mobile', isMobile.toString());
+      this.documentElement.setAttribute('data-device-touch', isTouch.toString());
+      
+      // Set CSS custom properties
+      this.documentElement.style.setProperty('--is-touch-device', isTouch ? '1' : '0');
+      this.documentElement.style.setProperty('--is-mobile-device', isMobile ? '1' : '0');
+    }
+
+    public destroy() {
+      if (this.unsubscribe) {
+        this.unsubscribe();
+      }
+    }
+  }
+
+  // Initialize viewport detector
+  const viewportDetector = new ViewportDetector();
+
+  // Make it globally available for debugging
+  (window as any).viewportDetector = viewportDetector;
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    viewportDetector.destroy();
+  });
+</script>
+
+<style>
+  /* Viewport-based styles */
+  :global(.viewport-mobile) {
+    --mobile-spacing: 1rem;
+    --mobile-font-size: 16px;
+  }
+
+  :global(.viewport-desktop) {
+    --mobile-spacing: 1.5rem;
+    --mobile-font-size: 1rem;
+  }
+
+  /* Device-based styles */
+  :global(.device-touch) {
+    --touch-target-size: 44px;
+    --touch-spacing: 8px;
+  }
+
+  :global(.device-no-touch) {
+    --touch-target-size: 32px;
+    --touch-spacing: 4px;
+  }
+
+  /* Responsive utilities using CSS custom properties */
+  :global(.responsive-spacing) {
+    padding: var(--mobile-spacing);
+  }
+
+  :global(.responsive-text) {
+    font-size: var(--mobile-font-size);
+  }
+
+  :global(.responsive-touch-target) {
+    min-height: var(--touch-target-size);
+    min-width: var(--touch-target-size);
+  }
+
+  /* Breakpoint-specific styles */
+  :global(.viewport-xs) {
+    --container-padding: 1rem;
+  }
+
+  :global(.viewport-sm) {
+    --container-padding: 1.5rem;
+  }
+
+  :global(.viewport-md) {
+    --container-padding: 2rem;
+  }
+
+  :global(.viewport-lg) {
+    --container-padding: 2rem;
+  }
+
+  :global(.viewport-xl) {
+    --container-padding: 2rem;
+  }
+
+  :global(.viewport-2xl) {
+    --container-padding: 2rem;
+  }
+</style>

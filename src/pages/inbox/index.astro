@@ -210,35 +210,32 @@ const hasConversations = sortedConversations.length > 0;
 ---
 
 <BaseLayout title="Inbox">
-  <div class="min-h-screen bg-neutral-50 dark:bg-black">
-    <div class="max-w-5xl mx-auto px-4 py-8">
+  <div class="min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 py-8">
       
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-black text-neutral-900 dark:text-white mb-2">
+        <h1 class="text-3xl font-normal text-stone-800 dark:text-stone-200 mb-2 font-serif">
           Messages
         </h1>
-        <p class="text-neutral-500 dark:text-neutral-400">
+        <p class="text-stone-600 dark:text-stone-400 font-normal">
           {sortedConversations.length} conversation{sortedConversations.length !== 1 ? 's' : ''}
         </p>
         
         {hasDatabaseIssues && (
-          <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
-            <div class="flex items-center gap-2 mb-2">
-              <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="mt-4 p-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <span class="font-semibold text-yellow-800 dark:text-yellow-200">Database Setup Required</span>
+              <span class="font-medium text-amber-800 dark:text-amber-200">Database Setup Required</span>
             </div>
-            <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
+            <p class="text-sm text-amber-700 dark:text-amber-300 mb-4 leading-relaxed">
               Your database needs to be configured for messaging. Please run the required SQL migrations.
             </p>
-            <div class="flex gap-2">
-              <a href="/system-status" class="inline-block px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors">
+            <div class="flex gap-3">
+              <a href="/system-status" class="btn-primary text-sm">
                 Check System Status
-              </a>
-              <a href="/inbox-debug" class="inline-block px-3 py-1.5 bg-neutral-600 text-white text-sm rounded-lg hover:bg-neutral-700 transition-colors">
-                Debug Info
               </a>
             </div>
           </div>
@@ -246,22 +243,22 @@ const hasConversations = sortedConversations.length > 0;
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="mb-6 flex items-center gap-4">
+      <div class="mb-8 flex items-center gap-4">
         <div class="flex-1 relative">
           <input
             type="text"
             id="search-input"
             placeholder="Search conversations..."
-            class="w-full px-5 py-3 pl-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-white placeholder-neutral-400"
+            class="input-field pl-12"
           />
-          <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
         
         <button 
           onclick="window.location.reload()" 
-          class="px-5 py-3 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-2xl font-semibold hover:bg-neutral-300 dark:hover:bg-neutral-700 transition flex items-center gap-2"
+          class="btn-secondary flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -271,7 +268,7 @@ const hasConversations = sortedConversations.length > 0;
         
         <button 
           id="new-message-btn"
-          class="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-semibold hover:shadow-lg transition flex items-center gap-2"
+          class="btn-primary flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -281,7 +278,7 @@ const hasConversations = sortedConversations.length > 0;
       </div>
 
       <!-- Conversations List -->
-      <div class="space-y-3" id="conversations-list">
+      <div class="space-y-4" id="conversations-list">
         {sortedConversations.length > 0 ? (
           sortedConversations.map((conv) => {
             const partner = conv.partner;
@@ -294,7 +291,7 @@ const hasConversations = sortedConversations.length > 0;
             return (
               <a
                 href={`/inbox/${conv.id}`}
-                class="block bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 hover:border-purple-500 dark:hover:border-purple-400 transition-all hover:shadow-lg conversation-item"
+                class="block bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6 hover:border-stone-400 dark:hover:border-stone-500 transition-all hover:shadow-sm conversation-item"
                 data-conversation-id={conv.id}
               >
                 <div class="flex items-center gap-4">
@@ -303,11 +300,11 @@ const hasConversations = sortedConversations.length > 0;
                     <img
                       src={displayAvatar}
                       alt={displayName}
-                      class="w-14 h-14 rounded-full object-cover border-2 border-neutral-100 dark:border-neutral-800"
+                      class="w-12 h-12 rounded-xl object-cover border border-stone-300 dark:border-stone-600"
                     />
                     {isUnread && (
-                      <div class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 border-2 border-white dark:border-neutral-900 rounded-full flex items-center justify-center notification-dot">
-                        <span class="text-white text-xs font-bold">{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>
+                      <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-stone-100 dark:border-stone-800 rounded-full flex items-center justify-center notification-dot">
+                        <span class="text-white text-xs font-medium">{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>
                       </div>
                     )}
                   </div>
@@ -315,11 +312,11 @@ const hasConversations = sortedConversations.length > 0;
                   <!-- Content -->
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
-                      <h3 class={`font-bold text-neutral-900 dark:text-white truncate ${isUnread ? 'text-lg' : 'text-base'}`}>
+                      <h3 class={`font-medium text-stone-800 dark:text-stone-200 truncate ${isUnread ? 'font-semibold' : ''}`}>
                         {displayName}
                       </h3>
                       {lastMsg && (
-                        <span class="text-xs text-neutral-400 dark:text-neutral-500 flex-shrink-0 ml-2">
+                        <span class="text-xs text-stone-500 dark:text-stone-400 flex-shrink-0 ml-2">
                           {new Date(lastMsg.created_at).toLocaleDateString() === new Date().toLocaleDateString()
                             ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : new Date(lastMsg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })
@@ -329,17 +326,17 @@ const hasConversations = sortedConversations.length > 0;
                     </div>
                     
                     {lastMsg ? (
-                      <p class={`text-sm truncate ${isUnread ? 'text-neutral-900 dark:text-white font-semibold' : 'text-neutral-500 dark:text-neutral-400'}`}>
-                        {isSentByMe && <span class="text-neutral-400 mr-1">You:</span>}
+                      <p class={`text-sm truncate ${isUnread ? 'text-stone-700 dark:text-stone-300 font-medium' : 'text-stone-600 dark:text-stone-400'}`}>
+                        {isSentByMe && <span class="text-stone-500 mr-1">You:</span>}
                         {lastMsg.content}
                       </p>
                     ) : (
-                      <p class="text-sm text-neutral-400 italic">No messages yet</p>
+                      <p class="text-sm text-stone-500 italic">No messages yet</p>
                     )}
                   </div>
 
                   <!-- Arrow Icon -->
-                  <svg class="w-5 h-5 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -348,42 +345,30 @@ const hasConversations = sortedConversations.length > 0;
           })
         ) : (
           <!-- Empty State -->
-          <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-16 text-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-16 text-center">
+            <div class="w-16 h-16 bg-stone-300 dark:bg-stone-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <svg class="w-8 h-8 text-stone-600 dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
+            <h3 class="text-xl font-medium text-stone-800 dark:text-stone-200 mb-3">
               {hasDatabaseIssues ? 'Database Setup Required' : 'No messages yet'}
             </h3>
-            <p class="text-neutral-500 dark:text-neutral-400 mb-6 max-w-md mx-auto">
+            <p class="text-stone-600 dark:text-stone-400 mb-6 max-w-md mx-auto leading-relaxed">
               {hasDatabaseIssues 
                 ? 'Your messaging database needs to be configured. Please run the required SQL migrations to enable messaging.'
                 : 'Start a conversation by visiting a user\'s profile and clicking "Message"'
               }
             </p>
             {hasDatabaseIssues ? (
-              <div class="space-x-2">
-                <a
-                  href="/system-status"
-                  class="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-semibold hover:shadow-lg transition"
-                >
+              <div class="space-x-3">
+                <a href="/system-status" class="btn-primary">
                   Check System Status
-                </a>
-                <a
-                  href="/inbox-debug"
-                  class="inline-block px-6 py-3 bg-gradient-to-r from-neutral-600 to-neutral-700 text-white rounded-full font-semibold hover:shadow-lg transition"
-                >
-                  Debug Info
                 </a>
               </div>
             ) : (
-              <a
-                href="/explore"
-                class="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg transition"
-              >
-                Explore Wipp
+              <a href="/explore" class="btn-primary">
+                Explore WIPP
               </a>
             )}
           </div>
@@ -394,12 +379,12 @@ const hasConversations = sortedConversations.length > 0;
   </div>
 
   <!-- New Message Modal -->
-  <div id="new-message-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-    <div class="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-2xl p-6 animate-fade-in-up">
+  <div id="new-message-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm">
+    <div class="bg-stone-50 dark:bg-stone-900 w-full max-w-md rounded-2xl shadow-xl border border-stone-200 dark:border-stone-700 p-6 animate-fade-in-up">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-neutral-900 dark:text-white">New Message</h2>
-        <button id="close-modal-btn" class="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-          <svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h2 class="text-xl font-medium text-stone-800 dark:text-stone-200">New Message</h2>
+        <button id="close-modal-btn" class="p-2 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors">
+          <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -407,23 +392,23 @@ const hasConversations = sortedConversations.length > 0;
 
       <!-- User Search -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Send to:</label>
+        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Send to:</label>
         <div class="relative">
           <input
             type="text"
             id="user-search-input"
             placeholder="Search users..."
-            class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            class="input-field"
             autocomplete="off"
           />
           
           <!-- Search Results -->
-          <div id="user-search-results" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10">
-            <div id="user-search-loading" class="hidden p-4 text-center text-neutral-500">
-              <div class="animate-spin w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full mx-auto mb-2"></div>
+          <div id="user-search-results" class="absolute top-full left-0 right-0 mt-1 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10">
+            <div id="user-search-loading" class="hidden p-4 text-center text-stone-500">
+              <div class="animate-spin w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full mx-auto mb-2"></div>
               Searching...
             </div>
-            <div id="user-search-empty" class="hidden p-4 text-center text-neutral-500 text-sm">
+            <div id="user-search-empty" class="hidden p-4 text-center text-stone-500 text-sm">
               No users found
             </div>
             <div id="user-search-list" class="py-2">
@@ -434,15 +419,15 @@ const hasConversations = sortedConversations.length > 0;
       </div>
 
       <!-- Selected User -->
-      <div id="selected-user" class="hidden mb-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+      <div id="selected-user" class="hidden mb-4 p-4 bg-stone-100 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700">
         <div class="flex items-center gap-3">
-          <img id="selected-user-avatar" class="w-10 h-10 rounded-full object-cover" />
+          <img id="selected-user-avatar" class="w-10 h-10 rounded-xl object-cover border border-stone-300 dark:border-stone-600" />
           <div class="flex-1">
-            <div id="selected-user-name" class="font-medium text-neutral-900 dark:text-white"></div>
-            <div id="selected-user-username" class="text-sm text-neutral-500"></div>
+            <div id="selected-user-name" class="font-medium text-stone-800 dark:text-stone-200"></div>
+            <div id="selected-user-username" class="text-sm text-stone-600 dark:text-stone-400"></div>
           </div>
-          <button id="remove-selected-user" class="p-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
-            <svg class="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="remove-selected-user" class="p-1 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors">
+            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -451,22 +436,22 @@ const hasConversations = sortedConversations.length > 0;
 
       <!-- Message Input -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Message:</label>
+        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Message:</label>
         <textarea
           id="message-input"
           rows="4"
           placeholder="Type your message..."
-          class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+          class="input-field resize-none"
           required
         ></textarea>
       </div>
 
       <!-- Actions -->
       <div class="flex gap-3">
-        <button id="cancel-message-btn" class="flex-1 px-4 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+        <button id="cancel-message-btn" class="btn-secondary flex-1">
           Cancel
         </button>
-        <button id="send-message-btn" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <button id="send-message-btn" class="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
           Send Message
         </button>
       </div>
@@ -540,19 +525,218 @@ const hasConversations = sortedConversations.length > 0;
     const newMessageModal = document.getElementById('new-message-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const cancelMessageBtn = document.getElementById('cancel-message-btn');
+    const userSearchInput = document.getElementById('user-search-input');
+    const userSearchResults = document.getElementById('user-search-results');
+    const userSearchLoading = document.getElementById('user-search-loading');
+    const userSearchEmpty = document.getElementById('user-search-empty');
+    const userSearchList = document.getElementById('user-search-list');
+    const selectedUser = document.getElementById('selected-user');
+    const selectedUserAvatar = document.getElementById('selected-user-avatar');
+    const selectedUserName = document.getElementById('selected-user-name');
+    const selectedUserUsername = document.getElementById('selected-user-username');
+    const removeSelectedUserBtn = document.getElementById('remove-selected-user');
+    const messageInput = document.getElementById('message-input');
+    const sendMessageBtn = document.getElementById('send-message-btn');
+
+    let selectedUserId = null;
+    let userSearchTimeout;
 
     // Open modal
     newMessageBtn?.addEventListener('click', () => {
       newMessageModal.classList.remove('hidden');
+      userSearchInput?.focus();
     });
 
     // Close modal
     function closeModal() {
       newMessageModal.classList.add('hidden');
+      resetModal();
     }
 
     closeModalBtn?.addEventListener('click', closeModal);
     cancelMessageBtn?.addEventListener('click', closeModal);
+
+    // Reset modal state
+    function resetModal() {
+      if (userSearchInput) userSearchInput.value = '';
+      if (messageInput) messageInput.value = '';
+      selectedUserId = null;
+      selectedUser?.classList.add('hidden');
+      userSearchResults?.classList.add('hidden');
+      if (userSearchList) userSearchList.innerHTML = '';
+    }
+
+    // User search functionality
+    userSearchInput?.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      
+      clearTimeout(userSearchTimeout);
+      
+      if (query.length < 2) {
+        userSearchResults?.classList.add('hidden');
+        return;
+      }
+      
+      userSearchTimeout = setTimeout(() => {
+        performUserSearch(query);
+      }, 300);
+    });
+
+    // Also show results when focusing on the input
+    userSearchInput?.addEventListener('focus', () => {
+      if (userSearchInput.value.trim().length >= 2) {
+        userSearchResults?.classList.remove('hidden');
+      }
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!userSearchInput?.contains(e.target) && !userSearchResults?.contains(e.target)) {
+        userSearchResults?.classList.add('hidden');
+      }
+    });
+
+    async function performUserSearch(query) {
+      console.log('Performing user search for:', query);
+      
+      if (!userSearchResults) {
+        console.error('User search results element not found');
+        return;
+      }
+      
+      userSearchResults.classList.remove('hidden');
+      userSearchLoading?.classList.remove('hidden');
+      userSearchEmpty?.classList.add('hidden');
+      if (userSearchList) userSearchList.innerHTML = '';
+
+      try {
+        console.log('Fetching users from API...');
+        const response = await fetch(`/api/search-users?q=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Search response:', data);
+
+        userSearchLoading?.classList.add('hidden');
+
+        if (data.users && data.users.length > 0) {
+          console.log('Found', data.users.length, 'users');
+          userSearchEmpty?.classList.add('hidden');
+          
+          data.users.forEach(user => {
+            const userItem = document.createElement('button');
+            userItem.type = 'button';
+            userItem.className = 'w-full flex items-center gap-3 px-4 py-3 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-left rounded-lg mx-2';
+            userItem.innerHTML = `
+              <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-xl object-cover border border-stone-300 dark:border-stone-600" />
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-stone-800 dark:text-stone-200 truncate">${user.displayName}</div>
+                <div class="text-xs text-stone-600 dark:text-stone-400 truncate">@${user.username}</div>
+              </div>
+            `;
+            
+            userItem.addEventListener('click', () => {
+              selectUser(user);
+            });
+            
+            if (userSearchList) userSearchList.appendChild(userItem);
+          });
+        } else {
+          console.log('No users found');
+          userSearchEmpty?.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('User search error:', error);
+        userSearchLoading?.classList.add('hidden');
+        userSearchEmpty?.classList.remove('hidden');
+        if (userSearchEmpty) userSearchEmpty.textContent = 'Search failed. Please try again.';
+      }
+    }
+
+    // Select user
+    function selectUser(user) {
+      selectedUserId = user.id;
+      if (selectedUserAvatar) selectedUserAvatar.src = user.avatar;
+      if (selectedUserName) selectedUserName.textContent = user.displayName;
+      if (selectedUserUsername) selectedUserUsername.textContent = `@${user.username}`;
+      
+      selectedUser?.classList.remove('hidden');
+      userSearchResults?.classList.add('hidden');
+      if (userSearchInput) userSearchInput.value = '';
+      messageInput?.focus();
+    }
+
+    // Remove selected user
+    removeSelectedUserBtn?.addEventListener('click', () => {
+      selectedUserId = null;
+      selectedUser?.classList.add('hidden');
+      userSearchInput?.focus();
+    });
+
+    // Send message (basic version without encryption)
+    sendMessageBtn?.addEventListener('click', async () => {
+      if (!selectedUserId || !messageInput?.value.trim()) {
+        alert('Please select a user and enter a message.');
+        return;
+      }
+
+      sendMessageBtn.disabled = true;
+      sendMessageBtn.textContent = 'Sending...';
+
+      try {
+        const requestBody = {
+          target_user_id: selectedUserId,
+          initial_message: messageInput.value.trim()
+        };
+
+        const response = await fetch('/api/create-conversation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          const responseText = await response.text();
+          console.error('Non-JSON response:', responseText);
+          throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}...`);
+        }
+
+        if (response.ok) {
+          window.location.href = `/inbox/${data.conversation_id}`;
+        } else {
+          console.error('Create conversation API error:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: data
+          });
+          
+          let errorMessage = data.error || 'Failed to create conversation';
+          if (data.code) {
+            errorMessage += ` (${data.code})`;
+          }
+          if (data.details) {
+            console.error('Error details:', data.details);
+            errorMessage += `\n\nDetails: ${data.details}`;
+          }
+          
+          throw new Error(errorMessage);
+        }
+      } catch (error) {
+        console.error('Error creating conversation:', error);
+        alert('Failed to send message: ' + error.message);
+        
+        sendMessageBtn.disabled = false;
+        sendMessageBtn.textContent = 'Send Message';
+      }
+    });
 
     // Close modal when clicking outside
     newMessageModal?.addEventListener('click', (e) => {
@@ -824,30 +1008,59 @@ const hasConversations = sortedConversations.length > 0;
     }, 300);
   });
 
+  // Also show results when focusing on the input
+  userSearchInput?.addEventListener('focus', () => {
+    if (userSearchInput.value.trim().length >= 2) {
+      userSearchResults.classList.remove('hidden');
+    }
+  });
+
+  // Hide search results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!userSearchInput?.contains(e.target) && !userSearchResults?.contains(e.target)) {
+      userSearchResults?.classList.add('hidden');
+    }
+  });
+
   async function performUserSearch(query) {
+    console.log('Performing user search for:', query);
+    
+    if (!userSearchResults) {
+      console.error('User search results element not found');
+      return;
+    }
+    
     userSearchResults.classList.remove('hidden');
     userSearchLoading.classList.remove('hidden');
     userSearchEmpty.classList.add('hidden');
     userSearchList.innerHTML = '';
 
     try {
+      console.log('Fetching users from API...');
       const response = await fetch(`/api/search-users?q=${encodeURIComponent(query)}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log('Search response:', data);
 
       userSearchLoading.classList.add('hidden');
 
       if (data.users && data.users.length > 0) {
+        console.log('Found', data.users.length, 'users');
         userSearchEmpty.classList.add('hidden');
         
         data.users.forEach(user => {
           const userItem = document.createElement('button');
           userItem.type = 'button';
-          userItem.className = 'w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-left';
+          userItem.className = 'w-full flex items-center gap-3 px-4 py-3 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-left rounded-lg mx-2';
           userItem.innerHTML = `
-            <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-full object-cover" />
+            <img src="${user.avatar}" alt="${user.displayName}" class="w-8 h-8 rounded-xl object-cover border border-stone-300 dark:border-stone-600" />
             <div class="flex-1 min-w-0">
-              <div class="font-medium text-neutral-900 dark:text-white truncate">${user.displayName}</div>
-              <div class="text-xs text-neutral-500 truncate">@${user.username}</div>
+              <div class="font-medium text-stone-800 dark:text-stone-200 truncate">${user.displayName}</div>
+              <div class="text-xs text-stone-600 dark:text-stone-400 truncate">@${user.username}</div>
             </div>
           `;
           
@@ -858,6 +1071,7 @@ const hasConversations = sortedConversations.length > 0;
           userSearchList.appendChild(userItem);
         });
       } else {
+        console.log('No users found');
         userSearchEmpty.classList.remove('hidden');
       }
     } catch (error) {
@@ -980,13 +1194,13 @@ const hasConversations = sortedConversations.length > 0;
 <style>
   /* Smooth animations */
   .conversation-item {
-    animation: fadeInUp 0.3s ease-out forwards;
+    animation: fadeInUp 0.4s ease-out forwards;
   }
 
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -996,13 +1210,13 @@ const hasConversations = sortedConversations.length > 0;
 
   /* Stagger animation */
   .conversation-item:nth-child(1) { animation-delay: 0s; }
-  .conversation-item:nth-child(2) { animation-delay: 0.05s; }
-  .conversation-item:nth-child(3) { animation-delay: 0.1s; }
-  .conversation-item:nth-child(4) { animation-delay: 0.15s; }
-  .conversation-item:nth-child(5) { animation-delay: 0.2s; }
+  .conversation-item:nth-child(2) { animation-delay: 0.1s; }
+  .conversation-item:nth-child(3) { animation-delay: 0.2s; }
+  .conversation-item:nth-child(4) { animation-delay: 0.3s; }
+  .conversation-item:nth-child(5) { animation-delay: 0.4s; }
 
   /* Modal animation */
   .animate-fade-in-up {
-    animation: fadeInUp 0.2s ease-out forwards;
+    animation: fadeInUp 0.3s ease-out forwards;
   }
 </style>

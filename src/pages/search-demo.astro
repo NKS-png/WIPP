@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import UnifiedSearch from '../components/UnifiedSearch.astro';
+---
+
+<BaseLayout title="Unified Search Demo">
+  <div class="max-w-4xl mx-auto py-8 space-y-8">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold mb-4">Unified Search Demo</h1>
+      <p class="text-lg text-stone-600 dark:text-stone-400">
+        Test the new unified search functionality across all content types
+      </p>
+    </div>
+    
+    <!-- Main Search Demo -->
+    <div class="bg-white dark:bg-stone-800 rounded-xl p-8 shadow-lg">
+      <h2 class="text-2xl font-semibold mb-6">Search Everything</h2>
+      <UnifiedSearch 
+        placeholder="Search users, communities, posts, projects..." 
+        maxResults={20} 
+      />
+    </div>
+    
+    <!-- Feature Highlights -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+        <h3 class="text-xl font-semibold mb-4 text-blue-900 dark:text-blue-100">
+          🔍 Real-time Search
+        </h3>
+        <ul class="space-y-2 text-blue-800 dark:text-blue-200">
+          <li>• Search as you type with 300ms debounce</li>
+          <li>• Minimum 2 characters to trigger search</li>
+          <li>• Fast response times under 500ms</li>
+          <li>• Automatic query sanitization</li>
+        </ul>
+      </div>
+      
+      <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-6">
+        <h3 class="text-xl font-semibold mb-4 text-green-900 dark:text-green-100">
+          📱 Mobile Optimized
+        </h3>
+        <ul class="space-y-2 text-green-800 dark:text-green-200">
+          <li>• Touch-friendly 44px minimum targets</li>
+          <li>• Full-screen results on mobile</li>
+          <li>• Proper keyboard navigation</li>
+          <li>• Responsive design breakpoints</li>
+        </ul>
+      </div>
+      
+      <div class="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-6">
+        <h3 class="text-xl font-semibold mb-4 text-purple-900 dark:text-purple-100">
+          🎯 Content Types
+        </h3>
+        <ul class="space-y-2 text-purple-800 dark:text-purple-200">
+          <li>• Users (profiles and usernames)</li>
+          <li>• Communities (names and descriptions)</li>
+          <li>• Posts (content and metadata)</li>
+          <li>• Projects (titles and descriptions)</li>
+        </ul>
+      </div>
+      
+      <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-6">
+        <h3 class="text-xl font-semibold mb-4 text-orange-900 dark:text-orange-100">
+          ⚡ Smart Features
+        </h3>
+        <ul class="space-y-2 text-orange-800 dark:text-orange-200">
+          <li>• Results grouped by content type</li>
+          <li>• Relevance-based sorting</li>
+          <li>• Loading states and error handling</li>
+          <li>• Search timing information</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Usage Instructions -->
+    <div class="bg-stone-100 dark:bg-stone-800 rounded-xl p-6">
+      <h3 class="text-xl font-semibold mb-4">How to Use</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-medium mb-2">Keyboard Navigation</h4>
+          <ul class="text-sm space-y-1 text-stone-600 dark:text-stone-400">
+            <li>• <kbd class="px-2 py-1 bg-stone-200 dark:bg-stone-700 rounded">↓</kbd> Navigate down</li>
+            <li>• <kbd class="px-2 py-1 bg-stone-200 dark:bg-stone-700 rounded">↑</kbd> Navigate up</li>
+            <li>• <kbd class="px-2 py-1 bg-stone-200 dark:bg-stone-700 rounded">Enter</kbd> Select result</li>
+            <li>• <kbd class="px-2 py-1 bg-stone-200 dark:bg-stone-700 rounded">Esc</kbd> Close results</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-medium mb-2">Search Tips</h4>
+          <ul class="text-sm space-y-1 text-stone-600 dark:text-stone-400">
+            <li>• Use specific keywords for better results</li>
+            <li>• Search works across all content types</li>
+            <li>• Results are sorted by relevance</li>
+            <li>• Click anywhere outside to close</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Integration Info -->
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-6">
+      <h3 class="text-xl font-semibold mb-4">Integration Complete</h3>
+      <p class="mb-4">
+        The UnifiedSearch component has been successfully integrated into:
+      </p>
+      <ul class="space-y-2">
+        <li>• <strong>Desktop Navbar:</strong> Available in the main navigation bar</li>
+        <li>• <strong>Mobile Menu:</strong> Accessible in the mobile hamburger menu</li>
+        <li>• <strong>Standalone Pages:</strong> Can be embedded anywhere in the application</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  kbd {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.75rem;
+  }
+</style>

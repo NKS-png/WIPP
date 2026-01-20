@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Support Artists">
+  
+  <div class="relative bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700">
+    <div class="max-w-4xl mx-auto px-6 py-20 text-center">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-normal mb-4 text-stone-800 dark:text-stone-200 leading-tight">
+        Support Artists
+      </h1>
+      <p class="text-stone-500 dark:text-stone-400 text-base mb-8 font-normal italic">
+        Coming soon.
+      </p>
+      <p class="text-stone-600 dark:text-stone-400 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
+        We're building something to help artists thrive. A space where your creative process is valued, supported, and celebrated.
+      </p>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-16">
+    
+    <!-- Coming Soon Content -->
+    <div class="text-center py-12">
+      <div class="w-20 h-20 bg-stone-200 dark:bg-stone-700 rounded-2xl flex items-center justify-center mx-auto mb-8">
+        <svg class="w-10 h-10 text-stone-500 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </div>
+      
+      <h2 class="text-2xl font-normal text-stone-800 dark:text-stone-200 mb-4">
+        Something thoughtful is coming
+      </h2>
+      
+      <p class="text-stone-600 dark:text-stone-400 max-w-lg mx-auto mb-8 leading-relaxed">
+        We're designing ways to support artists that feel genuine, not transactional. 
+        Because your creative journey deserves more than just another marketplace.
+      </p>
+      
+      <div class="text-stone-500 dark:text-stone-400 text-sm">
+        Stay tuned for updates
+      </div>
+    </div>
+
+    <!-- Quiet Philosophy -->
+    <div class="border-t border-stone-200 dark:border-stone-700 pt-16">
+      <div class="max-w-2xl mx-auto text-center">
+        <h3 class="text-lg font-normal text-stone-700 dark:text-stone-300 mb-6">
+          What we believe
+        </h3>
+        
+        <div class="space-y-6 text-stone-600 dark:text-stone-400 leading-relaxed">
+          <p>
+            Artists need support that understands the creative process isn't linear.
+          </p>
+          <p>
+            Real support means creating space for experimentation, failure, and growth.
+          </p>
+          <p>
+            The best creative work happens when artists feel safe to share unfinished ideas.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* Gentle fade-in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

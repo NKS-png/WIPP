@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Database Setup - Quick Instructions">
+  <div class="max-w-3xl mx-auto px-6 py-8">
+    <h1 class="text-2xl font-normal text-stone-800 dark:text-stone-200 mb-6">🔧 Quick Database Fix</h1>
+    
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 mb-6">
+      <h2 class="text-lg font-normal text-red-800 dark:text-red-200 mb-2">❌ Missing Tables Error</h2>
+      <p class="text-red-700 dark:text-red-300 font-normal">
+        You're seeing this because the database is missing required tables for comments and likes functionality.
+      </p>
+    </div>
+
+    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6 mb-6">
+      <h2 class="text-lg font-normal text-green-800 dark:text-green-200 mb-4">✅ Quick Fix (2 minutes)</h2>
+      
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-normal flex-shrink-0 mt-0.5">1</div>
+          <div>
+            <p class="font-normal text-green-800 dark:text-green-200">Open your Supabase Dashboard</p>
+            <p class="text-green-700 dark:text-green-300 text-sm">Go to your project dashboard</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-normal flex-shrink-0 mt-0.5">2</div>
+          <div>
+            <p class="font-normal text-green-800 dark:text-green-200">Click "SQL Editor" in the sidebar</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-normal flex-shrink-0 mt-0.5">3</div>
+          <div>
+            <p class="font-normal text-green-800 dark:text-green-200">Copy and paste this SQL, then click "Run":</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-normal text-stone-800 dark:text-stone-200">SQL to Run:</h3>
+        <button id="copy-btn" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors font-normal text-sm">
+          Copy SQL
+        </button>
+      </div>
+      
+      <div class="bg-stone-900 text-stone-100 p-4 rounded-lg overflow-x-auto">
+        <pre class="text-sm font-mono whitespace-pre-wrap" id="sql-content">-- Create missing tables for comments and likes with nested reply support
+CREATE TABLE IF NOT EXISTS public.post_comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    parent_id UUID REFERENCES public.post_comments(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.post_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(post_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.project_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(project_id, user_id)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_post_comments_post_id ON public.post_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_user_id ON public.post_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_parent_id ON public.post_comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_created_at ON public.post_comments(created_at);
+CREATE INDEX IF NOT EXISTS idx_post_likes_post_id ON public.post_likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_likes_user_id ON public.post_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_likes_project_id ON public.project_likes(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_likes_user_id ON public.project_likes(user_id);
+
+-- Enable Row Level Security
+ALTER TABLE public.post_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_likes ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for post_comments
+CREATE POLICY "Users can view all post comments" ON public.post_comments FOR SELECT USING (true);
+CREATE POLICY "Users can create their own post comments" ON public.post_comments FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own post comments" ON public.post_comments FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own post comments" ON public.post_comments FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS Policies for post_likes
+CREATE POLICY "Users can view all post likes" ON public.post_likes FOR SELECT USING (true);
+CREATE POLICY "Users can create their own post likes" ON public.post_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own post likes" ON public.post_likes FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS Policies for project_likes
+CREATE POLICY "Users can view all project likes" ON public.project_likes FOR SELECT USING (true);
+CREATE POLICY "Users can create their own project likes" ON public.project_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own project likes" ON public.project_likes FOR DELETE USING (auth.uid() = user_id);
+
+-- Add updated_at trigger for post_comments
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_post_comments_updated_at BEFORE UPDATE ON public.post_comments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Add parent_id column to existing post_comments table if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'post_comments' 
+                   AND column_name = 'parent_id') THEN
+        ALTER TABLE public.post_comments 
+        ADD COLUMN parent_id UUID REFERENCES public.post_comments(id) ON DELETE CASCADE;
+        
+        CREATE INDEX IF NOT EXISTS idx_post_comments_parent_id ON public.post_comments(parent_id);
+    END IF;
+END $$;</pre>
+      </div>
+    </div>
+
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+      <h3 class="font-normal text-blue-800 dark:text-blue-200 mb-3">🎉 After running the SQL:</h3>
+      <ul class="text-blue-700 dark:text-blue-300 space-y-2 font-normal">
+        <li>✅ Comments will work on community posts</li>
+        <li>✅ Nested replies (reply to replies) will work</li>
+        <li>✅ Likes will work on posts and projects</li>
+        <li>✅ Delete functionality will work properly</li>
+      </ul>
+      
+      <div class="mt-4 flex gap-4">
+        <a href="/communities" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors font-normal">
+          Go to Communities
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const copyBtn = document.getElementById('copy-btn');
+  const sqlContent = document.getElementById('sql-content');
+
+  copyBtn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(sqlContent.textContent);
+      copyBtn.textContent = '✅ Copied!';
+      copyBtn.classList.add('bg-green-600');
+      copyBtn.classList.remove('bg-blue-600');
+      
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy SQL';
+        copyBtn.classList.remove('bg-green-600');
+        copyBtn.classList.add('bg-blue-600');
+      }, 2000);
+    } catch (error) {
+      alert('Failed to copy. Please select and copy the SQL manually.');
+    }
+  });
+</script>

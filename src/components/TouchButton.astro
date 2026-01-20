@@ -1,0 +1,119 @@
+---
+/**
+ * TouchButton Component
+ * Touch-optimized button with proper sizing and feedback
+ */
+
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  class?: string;
+  'aria-label'?: string;
+}
+
+const { 
+  variant = 'primary',
+  size = 'md',
+  href,
+  type = 'button',
+  disabled = false,
+  class: className = '',
+  'aria-label': ariaLabel,
+  ...rest
+} = Astro.props;
+
+// Generate classes based on props
+const baseClasses = 'touch-target touch-feedback mobile-text-readable inline-flex items-center justify-center font-medium transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+const variantClasses = {
+  primary: 'bg-stone-800 text-stone-50 hover:bg-stone-700 focus:ring-stone-500 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300',
+  secondary: 'bg-transparent text-stone-700 border border-stone-300 hover:bg-stone-50 focus:ring-stone-500 dark:text-stone-300 dark:border-stone-600 dark:hover:bg-stone-800',
+  ghost: 'bg-transparent text-stone-600 hover:bg-stone-100 focus:ring-stone-500 dark:text-stone-400 dark:hover:bg-stone-800'
+};
+
+const sizeClasses = {
+  sm: 'px-3 py-2 text-sm rounded-lg min-h-[40px]',
+  md: 'px-4 py-3 text-base rounded-xl min-h-[44px]',
+  lg: 'px-6 py-4 text-lg rounded-xl min-h-[48px]'
+};
+
+const buttonClasses = [
+  baseClasses,
+  variantClasses[variant],
+  sizeClasses[size],
+  className
+].filter(Boolean).join(' ');
+
+// Determine element type
+const Element = href ? 'a' : 'button';
+const elementProps = href 
+  ? { href, ...rest }
+  : { type, disabled, ...rest };
+---
+
+<Element 
+  class={buttonClasses}
+  aria-label={ariaLabel}
+  {...elementProps}
+>
+  <slot />
+</Element>
+
+<style>
+  /* Ensure touch targets meet minimum size requirements */
+  :global(.touch-target) {
+    min-height: 44px;
+    min-width: 44px;
+    position: relative;
+  }
+  
+  /* Enhanced touch feedback */
+  :global(.touch-feedback) {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease, background-color 0.15s ease;
+  }
+  
+  :global(.touch-feedback:active) {
+    transform: scale(0.98);
+  }
+  
+  /* Focus styles for accessibility */
+  :global(.touch-feedback:focus) {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+  }
+  
+  /* Disabled state */
+  :global(.touch-feedback:disabled) {
+    transform: none;
+    cursor: not-allowed;
+  }
+  
+  /* Loading state support */
+  :global(.touch-feedback[data-loading="true"]) {
+    cursor: wait;
+    pointer-events: none;
+  }
+  
+  :global(.touch-feedback[data-loading="true"]:after) {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>

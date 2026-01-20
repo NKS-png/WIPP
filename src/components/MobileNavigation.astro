@@ -1,0 +1,276 @@
+---
+/**
+ * MobileNavigation Component
+ * Touch-friendly mobile navigation with proper touch targets and spacing
+ */
+
+export interface Props {
+  isOpen?: boolean;
+  class?: string;
+}
+
+const { isOpen = false, class: className = '' } = Astro.props;
+
+// Import responsive utilities
+import '../styles/responsive.css';
+---
+
+<nav 
+  class={`mobile-navigation ${className} ${isOpen ? 'mobile-navigation--open' : ''}`}
+  aria-label="Mobile navigation"
+  role="navigation"
+>
+  <div class="mobile-navigation__backdrop" data-mobile-nav-backdrop></div>
+  <div class="mobile-navigation__panel">
+    <div class="mobile-navigation__header">
+      <h2 class="mobile-navigation__title">Menu</h2>
+      <button 
+        class="mobile-navigation__close touch-target touch-feedback"
+        data-mobile-nav-close
+        aria-label="Close navigation menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="mobile-navigation__content">
+      <slot />
+    </div>
+  </div>
+</nav>
+
+<style>
+  .mobile-navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+  }
+  
+  .mobile-navigation--open {
+    display: block;
+  }
+  
+  .mobile-navigation__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .mobile-navigation__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 320px;
+    background: white;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  .mobile-navigation__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    min-height: 64px;
+  }
+  
+  .mobile-navigation__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+  }
+  
+  .mobile-navigation__close {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mobile-navigation__close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+  
+  .mobile-navigation__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .mobile-navigation__panel {
+      background: #1f2937;
+      color: white;
+    }
+    
+    .mobile-navigation__header {
+      border-bottom-color: #374151;
+    }
+    
+    .mobile-navigation__title {
+      color: white;
+    }
+    
+    .mobile-navigation__close {
+      color: #9ca3af;
+    }
+    
+    .mobile-navigation__close:hover {
+      background-color: #374151;
+      color: white;
+    }
+  }
+  
+  .dark .mobile-navigation__panel {
+    background: #1f2937;
+    color: white;
+  }
+  
+  .dark .mobile-navigation__header {
+    border-bottom-color: #374151;
+  }
+  
+  .dark .mobile-navigation__title {
+    color: white;
+  }
+  
+  .dark .mobile-navigation__close {
+    color: #9ca3af;
+  }
+  
+  .dark .mobile-navigation__close:hover {
+    background-color: #374151;
+    color: white;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  /* Only show on mobile */
+  @media (min-width: 768px) {
+    .mobile-navigation {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Mobile navigation functionality
+  class MobileNavigation {
+    private nav: HTMLElement | null;
+    private backdrop: HTMLElement | null;
+    private closeBtn: HTMLElement | null;
+    private isOpen: boolean = false;
+    
+    constructor() {
+      this.nav = document.querySelector('.mobile-navigation');
+      this.backdrop = document.querySelector('[data-mobile-nav-backdrop]');
+      this.closeBtn = document.querySelector('[data-mobile-nav-close]');
+      
+      this.init();
+    }
+    
+    private init() {
+      if (!this.nav) return;
+      
+      // Close button
+      this.closeBtn?.addEventListener('click', () => this.close());
+      
+      // Backdrop click
+      this.backdrop?.addEventListener('click', () => this.close());
+      
+      // Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.isOpen) {
+          this.close();
+        }
+      });
+      
+      // Prevent body scroll when open
+      this.nav.addEventListener('transitionstart', () => {
+        if (this.isOpen) {
+          document.body.style.overflow = 'hidden';
+        }
+      });
+      
+      this.nav.addEventListener('transitionend', () => {
+        if (!this.isOpen) {
+          document.body.style.overflow = '';
+        }
+      });
+    }
+    
+    public open() {
+      if (!this.nav) return;
+      
+      this.isOpen = true;
+      this.nav.classList.add('mobile-navigation--open');
+      document.body.style.overflow = 'hidden';
+      
+      // Focus management
+      const firstFocusable = this.nav.querySelector('button, a, input, [tabindex]') as HTMLElement;
+      firstFocusable?.focus();
+    }
+    
+    public close() {
+      if (!this.nav) return;
+      
+      this.isOpen = false;
+      this.nav.classList.remove('mobile-navigation--open');
+      document.body.style.overflow = '';
+    }
+    
+    public toggle() {
+      if (this.isOpen) {
+        this.close();
+      } else {
+        this.open();
+      }
+    }
+  }
+  
+  // Initialize mobile navigation
+  const mobileNav = new MobileNavigation();
+  
+  // Make it globally available
+  (window as any).mobileNavigation = mobileNav;
+</script>

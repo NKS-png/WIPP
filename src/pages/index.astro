@@ -6,7 +6,9 @@ import { supabase } from '../lib/supabase';
 const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
 
 function getEmojiAvatar(username: string): string {
-  const hash = username.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+  // Add null safety check
+  if (!username) username = 'user';
+  const hash = String(username).split('').reduce((a, b) => a + b.charCodeAt(0), 0);
   const emoji = emojis[hash % emojis.length];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3f4f6"/><text x="50" y="65" font-size="50" text-anchor="middle">${emoji}</text></svg>`;
   
@@ -44,31 +46,41 @@ const categories = [
 
 <BaseLayout title="Home">
   
-  <section class="relative bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center animate-fade-in-up">
-      <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-neutral-900 dark:text-white">
-        Less <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">noise.</span> More art.
+  <section class="relative bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700">
+    <div class="max-w-4xl mx-auto px-6 py-20 text-center">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-normal mb-4 text-stone-800 dark:text-stone-200 leading-tight">
+        A place for work in progress
       </h1>
-      <p class="text-neutral-500 text-base sm:text-lg max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed px-4">
-        The community-first platform for artists to share work, get real feedback, and grow without algorithms.
+      <p class="text-stone-500 dark:text-stone-400 text-base mb-8 font-normal italic">
+        Process over performance.
+      </p>
+      <p class="text-stone-600 dark:text-stone-400 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
+        Share unfinished work, get thoughtful feedback, and grow as an artist in a community that values process over perfection.
       </p>
       
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-        <a href="/explore" class="btn-primary px-6 sm:px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm sm:text-base">
-          Explore Feed
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/explore" class="btn-primary">
+          Browse Work
         </a>
-        <a href="/communities" class="px-6 sm:px-8 py-3 rounded-full border border-neutral-200 dark:border-neutral-700 font-medium text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-sm sm:text-base">
-          Join a Community
+        <a href="/communities" class="btn-secondary">
+          Find Your Community
         </a>
+      </div>
+      
+      <!-- Subtle Community Signals -->
+      <div class="mt-8 text-center">
+        <p class="text-stone-500 dark:text-stone-400 text-sm">
+          {projects && projects.length > 0 ? `${projects.length} works shared this week` : 'A quiet space for artists to share unfinished work'}
+        </p>
       </div>
     </div>
   </section>
 
-  <div class="sticky md:top-24 top-20 z-30 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-100 dark:border-neutral-800">
-    <div class="max-w-7xl mx-auto px-6 py-4">
-      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+  <div class="sticky md:top-24 top-20 z-30 bg-stone-50/90 dark:bg-stone-900/90 backdrop-blur-sm border-b border-stone-200 dark:border-stone-700">
+    <div class="max-w-6xl mx-auto px-6 py-4">
+      <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
         {categories.map((cat, index) => (
-          <a href={`/explore?category=${cat}`} class={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all transform hover:scale-105 active:scale-95 ${index === 0 ? 'bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md' : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'}`}>
+          <a href={`/explore?category=${cat}`} class={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-normal transition-all ${index === 0 ? 'bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900' : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-500'}`}>
             {cat}
           </a>
         ))}
@@ -76,22 +88,22 @@ const categories = [
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+  <div class="max-w-6xl mx-auto px-6 py-12">
     
-    <!-- Mobile-only Top Creators & Communities (Horizontal Scroll) -->
-    <div class="lg:hidden mb-8 space-y-6">
+    <!-- Mobile-only Top Creators & Communities -->
+    <div class="lg:hidden mb-12 space-y-8">
       
       <!-- Top Creators - Mobile -->
-      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
-        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Top Creators</h3>
-        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+      <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6">
+        <h3 class="font-normal text-stone-800 dark:text-stone-200 mb-6 text-base">Featured Artists</h3>
+        <div class="flex gap-6 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
           {creators?.map((creator) => (
-            <a href={`/profile/${creator.id}`} class="flex-shrink-0 flex flex-col items-center gap-2 group min-w-[80px]">
-              <div class="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border border-neutral-100 dark:border-neutral-700">
+            <a href={`/profile/${creator.id}`} class="flex-shrink-0 flex flex-col items-center gap-3 group min-w-[90px]">
+              <div class="w-14 h-14 rounded-xl bg-stone-200 dark:bg-stone-700 overflow-hidden border border-stone-300 dark:border-stone-600">
                 <img src={creator.avatar_url || getEmojiAvatar(creator.username || 'user')} class="w-full h-full object-cover" />
               </div>
               <div class="text-center">
-                <p class="text-xs font-bold text-neutral-900 dark:text-white truncate group-hover:text-blue-600 transition-colors max-w-[70px]">
+                <p class="text-sm font-normal text-stone-700 dark:text-stone-300 truncate group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors max-w-[80px]">
                   {creator.full_name?.split(' ')[0] || creator.username}
                 </p>
               </div>
@@ -101,23 +113,23 @@ const categories = [
       </div>
 
       <!-- Trending Communities - Mobile -->
-      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
-        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Trending Communities</h3>
-        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+      <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6">
+        <h3 class="font-normal text-stone-800 dark:text-stone-200 mb-6 text-base">Communities</h3>
+        <div class="flex gap-6 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
           {communities?.map((c) => (
-            <a href={`/c/${c.id}`} class="flex-shrink-0 flex flex-col items-center gap-2 group min-w-[80px]">
-              <div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
-                {c.image_url ? <img src={c.image_url} class="w-full h-full object-cover rounded-lg"/> : c.name[0]}
+            <a href={`/c/${c.id}`} class="flex-shrink-0 flex flex-col items-center gap-3 group min-w-[90px]">
+              <div class="w-14 h-14 rounded-xl bg-stone-300 dark:bg-stone-600 text-stone-700 dark:text-stone-300 flex items-center justify-center font-normal text-base">
+                {c.image_url ? <img src={c.image_url} class="w-full h-full object-cover rounded-xl"/> : c.name[0]}
               </div>
               <div class="text-center">
-                <p class="text-xs font-bold text-neutral-900 dark:text-white group-hover:underline max-w-[70px] truncate">{c.name}</p>
-                <p class="text-xs text-neutral-500">{c.members?.[0]?.count || 0}</p>
+                <p class="text-sm font-normal text-stone-700 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-stone-100 max-w-[80px] truncate">{c.name}</p>
+                <p class="text-xs text-stone-500 dark:text-stone-400">{c.members?.[0]?.count || 0}</p>
               </div>
             </a>
           ))}
         </div>
-        <div class="text-center mt-3">
-          <a href="/communities" class="text-xs font-bold text-blue-600 hover:underline">
+        <div class="text-center mt-6">
+          <a href="/communities" class="text-sm font-normal text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors">
             View All →
           </a>
         </div>
@@ -125,81 +137,83 @@ const categories = [
     </div>
 
     <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-12">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-12">
     
-    <div class="lg:col-span-3 space-y-6 sm:space-y-8 animate-fade-in-up delay-100">
+    <div class="lg:col-span-3 space-y-10">
       
       <div class="flex items-center justify-between">
-        <h2 class="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-          <span class="text-xl sm:text-2xl">🔥</span> Trending Projects
+        <h2 class="text-xl font-normal text-stone-800 dark:text-stone-200">
+          What people are working on
         </h2>
-        <div class="flex gap-2 text-sm font-medium text-neutral-500">
-           <a href="/explore" class="hover:text-black dark:hover:text-white transition-colors">View All &rarr;</a>
+        <div class="text-base font-normal text-stone-600 dark:text-stone-400">
+           <a href="/explore" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">View All →</a>
         </div>
       </div>
 
       {projects && projects.length > 0 ? (
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-          {projects.map((project) => (
-            <ProjectCard project={project} />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {projects.map((project, index) => (
+            <div class={`${index % 3 === 1 ? 'sm:mt-4' : index % 5 === 2 ? 'sm:mt-2' : ''}`}>
+              <ProjectCard project={project} />
+            </div>
           ))}
         </div>
       ) : (
-        <div class="text-center py-16 sm:py-20 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
-          <p class="text-neutral-500 mb-2">No projects yet. Be the first to post!</p>
-          <a href="/post" class="text-blue-600 font-bold hover:underline mt-2 inline-block text-sm">Create Project &rarr;</a>
+        <div class="text-center py-20 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl">
+          <p class="text-stone-600 dark:text-stone-400 mb-4">No projects yet. Be the first to share your work.</p>
+          <p class="text-stone-500 dark:text-stone-500 text-sm mb-4 italic">It's okay if it's not finished.</p>
+          <a href="/post" class="text-stone-700 dark:text-stone-300 font-normal hover:text-stone-900 dark:hover:text-stone-100 transition-colors">Share Your Work →</a>
         </div>
       )}
       
-      <div class="text-center pt-6 sm:pt-8 border-t border-neutral-100 dark:border-neutral-800">
-        <a href="/explore" class="btn-secondary inline-flex items-center gap-2 px-6 py-2 rounded-full text-sm">
+      <div class="text-center pt-8 border-t border-stone-200 dark:border-stone-700">
+        <a href="/explore" class="btn-secondary inline-flex items-center gap-2">
           Load more
         </a>
       </div>
     </div>
 
     <!-- Desktop Sidebar -->
-    <aside class="hidden lg:block lg:col-span-1 space-y-8 animate-fade-in-up delay-200">
+    <aside class="hidden lg:block lg:col-span-1 space-y-10">
       
-      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
-        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Top Creators</h3>
-        <div class="space-y-4">
+      <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6">
+        <h3 class="font-normal text-stone-800 dark:text-stone-200 mb-6 text-base">Featured Artists</h3>
+        <div class="space-y-5">
           {creators?.map((creator) => (
-            <a href={`/profile/${creator.id}`} class="flex items-center gap-3 group">
-              <div class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border border-neutral-100 dark:border-neutral-700">
+            <a href={`/profile/${creator.id}`} class="flex items-center gap-4 group">
+              <div class="w-12 h-12 rounded-xl bg-stone-200 dark:bg-stone-700 overflow-hidden border border-stone-300 dark:border-stone-600">
                 <img src={creator.avatar_url || getEmojiAvatar(creator.username || 'user')} class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-blue-600 transition-colors">
+                <p class="text-base font-normal text-stone-700 dark:text-stone-300 truncate group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors">
                   {creator.full_name || creator.username}
                 </p>
-                <p class="text-xs text-neutral-500 truncate">@{creator.username}</p>
+                <p class="text-sm text-stone-500 dark:text-stone-400 truncate">@{creator.username}</p>
               </div>
             </a>
           ))}
         </div>
       </div>
 
-      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm sticky top-32">
-        <h3 class="font-bold text-neutral-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Trending Communities</h3>
-        <div class="space-y-4">
+      <div class="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6 sticky top-32">
+        <h3 class="font-normal text-stone-800 dark:text-stone-200 mb-6 text-base">Communities</h3>
+        <div class="space-y-5">
           {communities?.map((c) => (
-             <a href={`/c/${c.id}`} class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
-                    {c.image_url ? <img src={c.image_url} class="w-full h-full object-cover rounded-lg"/> : c.name[0]}
+             <a href={`/c/${c.id}`} class="flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-stone-300 dark:bg-stone-600 text-stone-700 dark:text-stone-300 flex items-center justify-center font-normal text-base">
+                    {c.image_url ? <img src={c.image_url} class="w-full h-full object-cover rounded-xl"/> : c.name[0]}
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-neutral-900 dark:text-white group-hover:underline">{c.name}</p>
-                    <p class="text-xs text-neutral-500">{c.members?.[0]?.count || 0} Members</p>
+                    <p class="text-base font-normal text-stone-700 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors">{c.name}</p>
+                    <p class="text-sm text-stone-500 dark:text-stone-400">{c.members?.[0]?.count || 0} Members</p>
                 </div>
              </a>
           ))}
         </div>
-        <a href="/communities" class="block mt-4 text-xs font-bold text-blue-600 hover:underline text-center">
-            View All Communities &rarr;
+        <a href="/communities" class="block mt-6 text-sm font-normal text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors text-center">
+            View All Communities →
         </a>
       </div>
-
 
     </aside>
 
@@ -211,16 +225,13 @@ const categories = [
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   
-  .animate-fade-in-up {
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
-    transform: translateY(20px);
+  /* Gentle, optional fade-in - much more subtle */
+  .gentle-fade {
+    opacity: 0.95;
+    transition: opacity 0.3s ease;
   }
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  
+  .gentle-fade:hover {
+    opacity: 1;
   }
 </style>

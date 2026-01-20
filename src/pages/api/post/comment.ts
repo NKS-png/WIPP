@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response('Invalid session', { status: 401 });
     }
 
-    const { post_id, content } = await request.json();
+    const { post_id, content, parent_id } = await request.json();
 
     if (!post_id || !content?.trim()) {
       return new Response('Missing required fields', { status: 400 });
@@ -38,13 +38,31 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response('Post not found', { status: 404 });
     }
 
+    // If parent_id is provided, verify the parent comment exists and belongs to the same post
+    if (parent_id) {
+      const { data: parentComment } = await supabase
+        .from('post_comments')
+        .select('id, post_id')
+        .eq('id', parent_id)
+        .single();
+
+      if (!parentComment) {
+        return new Response('Parent comment not found', { status: 404 });
+      }
+
+      if (parentComment.post_id !== post_id) {
+        return new Response('Parent comment does not belong to this post', { status: 400 });
+      }
+    }
+
     // Insert comment
     const { error } = await supabase
       .from('post_comments')
       .insert({
         post_id,
         content: content.trim(),
-        user_id: sessionData.session.user.id
+        user_id: sessionData.session.user.id,
+        parent_id: parent_id || null
       });
 
     if (error) {

@@ -1,0 +1,435 @@
+/**
+ * Responsive utilities and mobile breakpoint system CSS
+ * Mobile-first responsive design utilities and touch interface standards
+ */
+
+/* ===== RESPONSIVE CONTAINER UTILITIES ===== */
+
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: 1536px;
+  }
+}
+
+/* ===== MOBILE-FIRST UTILITIES ===== */
+
+/* Mobile viewport compliance - prevent horizontal scrolling */
+.mobile-viewport-safe {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Mobile content scaling */
+.mobile-image-responsive {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.mobile-content-fit {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile typography standards */
+.mobile-text-readable {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .mobile-text-readable {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* ===== TOUCH INTERFACE UTILITIES ===== */
+
+/* Touch target sizing - minimum 44px */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.touch-target-large {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Touch target spacing */
+.touch-spacing {
+  margin: 4px;
+}
+
+.touch-spacing-lg {
+  margin: 8px;
+}
+
+/* Touch feedback */
+.touch-feedback {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.touch-feedback:active {
+  transform: scale(0.98);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.touch-feedback:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Remove default touch highlights */
+.no-touch-highlight {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ===== MOBILE NAVIGATION UTILITIES ===== */
+
+.mobile-nav-item {
+  @apply touch-target touch-feedback;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  display: block;
+  border-radius: 0.5rem;
+}
+
+.mobile-nav-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.mobile-nav-item:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RESPONSIVE GRID UTILITIES ===== */
+
+.grid-responsive {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ===== MOBILE FORM UTILITIES ===== */
+
+.mobile-form-input {
+  @apply touch-target mobile-text-readable;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mobile-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Prevent zoom on input focus on iOS */
+@media screen and (max-width: 767px) {
+  .mobile-form-input {
+    font-size: 16px;
+  }
+}
+
+/* ===== MOBILE BUTTON UTILITIES ===== */
+
+.mobile-btn {
+  @apply touch-target touch-feedback mobile-text-readable;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mobile-btn-primary {
+  @apply mobile-btn;
+  background-color: #1f2937;
+  color: white;
+}
+
+.mobile-btn-primary:hover {
+  background-color: #374151;
+}
+
+.mobile-btn-secondary {
+  @apply mobile-btn;
+  background-color: transparent;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+}
+
+.mobile-btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+/* ===== MOBILE SPACING UTILITIES ===== */
+
+.mobile-spacing {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-spacing {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-spacing {
+    padding: 2rem;
+  }
+}
+
+.mobile-spacing-sm {
+  padding: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-spacing-sm {
+    padding: 1rem;
+  }
+}
+
+.mobile-spacing-lg {
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-spacing-lg {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-spacing-lg {
+    padding: 3rem;
+  }
+}
+
+/* ===== MOBILE VISIBILITY UTILITIES ===== */
+
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+.tablet-up {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .tablet-up {
+    display: block;
+  }
+}
+
+/* ===== MOBILE LAYOUT UTILITIES ===== */
+
+.mobile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-stack {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.mobile-center {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .mobile-center {
+    text-align: left;
+  }
+}
+
+/* ===== MOBILE CARD UTILITIES ===== */
+
+.mobile-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .mobile-card {
+    background: #1f2937;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .mobile-btn-primary {
+    background-color: #f9fafb;
+    color: #1f2937;
+  }
+  
+  .mobile-btn-primary:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .mobile-btn-secondary {
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  
+  .mobile-btn-secondary:hover {
+    background-color: #374151;
+  }
+  
+  .mobile-form-input {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: white;
+  }
+  
+  .mobile-form-input:focus {
+    border-color: #60a5fa;
+  }
+}
+
+/* Support for dark class */
+.dark .mobile-card {
+  background: #1f2937;
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark .mobile-btn-primary {
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.dark .mobile-btn-primary:hover {
+  background-color: #e5e7eb;
+}
+
+.dark .mobile-btn-secondary {
+  color: #f9fafb;
+  border-color: #4b5563;
+}
+
+.dark .mobile-btn-secondary:hover {
+  background-color: #374151;
+}
+
+.dark .mobile-form-input {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.dark .mobile-form-input:focus {
+  border-color: #60a5fa;
+}

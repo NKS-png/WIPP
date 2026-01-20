@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `post-images/${fileName}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('projects')
         .upload(filePath, imageFile, { cacheControl: '3600', upsert: false });
 
@@ -95,13 +95,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       console.log('User sparks balance:', userProfile?.sparks_balance);
       
       if (!userProfile || (userProfile.sparks_balance || 0) < 1) {
-        // Give user sparks for testing
-        await supabase
-          .from('profiles')
-          .update({ sparks_balance: 10 })
-          .eq('id', sessionData.session.user.id);
-        
-        console.log('Added sparks to user for testing');
+        return new Response('Insufficient sparks for workshop posts', { status: 400 });
       }
       
       // Workshop post using RPC

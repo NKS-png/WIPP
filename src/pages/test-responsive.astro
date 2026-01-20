@@ -1,0 +1,259 @@
+---
+/**
+ * Test page for responsive utilities and mobile breakpoint system
+ * This page demonstrates and tests all the responsive utilities
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ResponsiveContainer from '../components/ResponsiveContainer.astro';
+import TouchButton from '../components/TouchButton.astro';
+import MobileNavigation from '../components/MobileNavigation.astro';
+---
+
+<BaseLayout title="Responsive Utilities Test">
+  <ResponsiveContainer maxWidth="lg" padding="md">
+    <div class="space-y-8">
+      <header class="text-center">
+        <h1 class="text-3xl font-bold mb-4">Responsive Utilities Test</h1>
+        <p class="text-stone-600 dark:text-stone-400">
+          Testing mobile breakpoint system and touch interface utilities
+        </p>
+      </header>
+
+      <!-- Viewport Information -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Viewport Information</h2>
+        <div id="viewport-info" class="space-y-2 text-sm">
+          <div>Current breakpoint: <span id="current-breakpoint" class="font-mono">-</span></div>
+          <div>Viewport size: <span id="viewport-size" class="font-mono">-</span></div>
+          <div>Is mobile viewport: <span id="is-mobile-viewport" class="font-mono">-</span></div>
+          <div>Is mobile device: <span id="is-mobile-device" class="font-mono">-</span></div>
+          <div>Is touch device: <span id="is-touch-device" class="font-mono">-</span></div>
+        </div>
+      </section>
+
+      <!-- Responsive Container Test -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Responsive Container Test</h2>
+        <div class="space-y-4">
+          <ResponsiveContainer maxWidth="sm" padding="sm" class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded">
+            <p>Small container with small padding</p>
+          </ResponsiveContainer>
+          <ResponsiveContainer maxWidth="md" padding="md" class="bg-green-50 dark:bg-green-900/20 p-4 rounded">
+            <p>Medium container with medium padding</p>
+          </ResponsiveContainer>
+          <ResponsiveContainer maxWidth="lg" padding="lg" class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded">
+            <p>Large container with large padding</p>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <!-- Touch Button Test -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Touch Button Test</h2>
+        <div class="space-y-4">
+          <div class="mobile-stack">
+            <TouchButton variant="primary" size="sm">Small Primary</TouchButton>
+            <TouchButton variant="secondary" size="md">Medium Secondary</TouchButton>
+            <TouchButton variant="ghost" size="lg">Large Ghost</TouchButton>
+          </div>
+          <div class="mobile-stack">
+            <TouchButton variant="primary" disabled>Disabled Button</TouchButton>
+            <TouchButton variant="secondary" href="/about">Link Button</TouchButton>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mobile Visibility Test -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Mobile Visibility Test</h2>
+        <div class="space-y-2">
+          <div class="mobile-only p-2 bg-red-100 dark:bg-red-900/20 rounded">
+            This is only visible on mobile (below 768px)
+          </div>
+          <div class="desktop-only p-2 bg-blue-100 dark:bg-blue-900/20 rounded">
+            This is only visible on desktop (768px and above)
+          </div>
+          <div class="tablet-up p-2 bg-green-100 dark:bg-green-900/20 rounded">
+            This is visible on tablet and up (768px and above)
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid Responsive Test -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Responsive Grid Test</h2>
+        <div class="grid-responsive">
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 1</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 2</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 3</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 4</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 5</div>
+          <div class="p-4 bg-stone-100 dark:bg-stone-800 rounded text-center">Item 6</div>
+        </div>
+      </section>
+
+      <!-- Touch Target Validation -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Touch Target Validation</h2>
+        <div class="space-y-4">
+          <div class="flex flex-wrap gap-2">
+            <button id="test-button-1" class="touch-target bg-blue-500 text-white px-4 py-2 rounded">
+              Valid Touch Target
+            </button>
+            <button id="test-button-2" class="bg-red-500 text-white px-2 py-1 rounded text-sm">
+              Invalid Touch Target
+            </button>
+            <button id="test-button-3" class="touch-target-large bg-green-500 text-white px-6 py-3 rounded">
+              Large Touch Target
+            </button>
+          </div>
+          <div id="touch-validation-results" class="text-sm space-y-1">
+            <!-- Results will be populated by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Mobile Form Test -->
+      <section class="mobile-card">
+        <h2 class="text-xl font-semibold mb-4">Mobile Form Test</h2>
+        <form class="space-y-4">
+          <div>
+            <label for="test-input" class="block text-sm font-medium mb-2">Test Input</label>
+            <input 
+              type="text" 
+              id="test-input" 
+              class="mobile-form-input" 
+              placeholder="This should be 16px on mobile to prevent zoom"
+            />
+          </div>
+          <div>
+            <label for="test-textarea" class="block text-sm font-medium mb-2">Test Textarea</label>
+            <textarea 
+              id="test-textarea" 
+              class="mobile-form-input" 
+              rows="3"
+              placeholder="Mobile-optimized textarea"
+            ></textarea>
+          </div>
+          <div class="mobile-stack">
+            <TouchButton type="submit" variant="primary">Submit Form</TouchButton>
+            <TouchButton type="reset" variant="secondary">Reset Form</TouchButton>
+          </div>
+        </form>
+      </section>
+
+      <!-- Mobile Navigation Test -->
+      <section class="mobile-card mobile-only">
+        <h2 class="text-xl font-semibold mb-4">Mobile Navigation Test</h2>
+        <TouchButton variant="primary" class="open-mobile-nav">Open Mobile Navigation</TouchButton>
+      </section>
+    </div>
+  </ResponsiveContainer>
+
+  <!-- Mobile Navigation Component -->
+  <MobileNavigation class="test-mobile-nav">
+    <div class="px-6 space-y-2">
+      <a href="/" class="mobile-nav-item">Home</a>
+      <a href="/about" class="mobile-nav-item">About</a>
+      <a href="/explore" class="mobile-nav-item">Explore</a>
+      <a href="/communities" class="mobile-nav-item">Communities</a>
+      <a href="/support" class="mobile-nav-item">Support</a>
+    </div>
+  </MobileNavigation>
+</BaseLayout>
+
+<script>
+  import { 
+    isMobileViewport, 
+    isMobileDevice, 
+    isTouchDevice, 
+    getCurrentBreakpoint,
+    validateTouchTarget,
+    viewportObserver 
+  } from '../lib/responsive';
+
+  // Update viewport information
+  function updateViewportInfo() {
+    const currentBreakpoint = getCurrentBreakpoint();
+    const isMobile = isMobileViewport();
+    const isMobileDev = isMobileDevice();
+    const isTouch = isTouchDevice();
+
+    document.getElementById('current-breakpoint')!.textContent = currentBreakpoint;
+    document.getElementById('viewport-size')!.textContent = `${window.innerWidth}x${window.innerHeight}`;
+    document.getElementById('is-mobile-viewport')!.textContent = isMobile.toString();
+    document.getElementById('is-mobile-device')!.textContent = isMobileDev.toString();
+    document.getElementById('is-touch-device')!.textContent = isTouch.toString();
+  }
+
+  // Validate touch targets
+  function validateTouchTargets() {
+    const resultsContainer = document.getElementById('touch-validation-results')!;
+    resultsContainer.innerHTML = '';
+
+    const buttons = [
+      document.getElementById('test-button-1')!,
+      document.getElementById('test-button-2')!,
+      document.getElementById('test-button-3')!
+    ];
+
+    buttons.forEach((button, index) => {
+      const validation = validateTouchTarget(button);
+      const resultDiv = document.createElement('div');
+      resultDiv.className = validation.isValid ? 'text-green-600' : 'text-red-600';
+      resultDiv.innerHTML = `
+        Button ${index + 1}: ${validation.isValid ? '✓ Valid' : '✗ Invalid'} 
+        (${validation.width.toFixed(0)}x${validation.height.toFixed(0)}px)
+        ${validation.issues.length > 0 ? `<br><span class="text-xs">${validation.issues.join(', ')}</span>` : ''}
+      `;
+      resultsContainer.appendChild(resultDiv);
+    });
+  }
+
+  // Initialize
+  updateViewportInfo();
+  validateTouchTargets();
+
+  // Subscribe to viewport changes
+  if (viewportObserver) {
+    viewportObserver.subscribe(() => {
+      updateViewportInfo();
+      validateTouchTargets();
+    });
+  }
+
+  // Mobile navigation test
+  const openNavBtn = document.querySelector('.open-mobile-nav');
+  if (openNavBtn && (window as any).mobileNavigation) {
+    openNavBtn.addEventListener('click', () => {
+      (window as any).mobileNavigation.open();
+    });
+  }
+
+  // Update on resize
+  window.addEventListener('resize', () => {
+    setTimeout(() => {
+      updateViewportInfo();
+      validateTouchTargets();
+    }, 100);
+  });
+</script>
+
+<style>
+  /* Test-specific styles */
+  .space-y-8 > * + * {
+    margin-top: 2rem;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
+  
+  .space-y-1 > * + * {
+    margin-top: 0.25rem;
+  }
+</style>

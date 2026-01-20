@@ -120,6 +120,13 @@ try {
               >
                 Create Test Conversation
               </button>
+              
+              <button 
+                id="quick-create-conversation"
+                class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              >
+                Quick Create (Uses Fixed ID)
+              </button>
             </div>
           </div>
 
@@ -255,7 +262,43 @@ Click a test button to see results...
     }
   }
 
+  async function quickCreateConversation() {
+    if (!resultsEl || !otherUserSelect) return;
+    
+    const otherUserId = otherUserSelect.value;
+    if (!otherUserId) {
+      resultsEl.textContent = 'Please select another user first';
+      return;
+    }
+    
+    resultsEl.textContent = 'Quick creating test conversation...';
+    
+    try {
+      const response = await fetch('/api/quick-create-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          other_user_id: otherUserId
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && conversationIdInput) {
+        conversationIdInput.value = data.conversation_id;
+        resultsEl.textContent = `Conversation created successfully!\nConversation ID: ${data.conversation_id}\n\nYou can now test messaging below.`;
+      } else {
+        resultsEl.textContent = `Quick Create Result:\n${JSON.stringify(data, null, 2)}`;
+      }
+    } catch (error) {
+      resultsEl.textContent = `Quick Create Error: ${error.message}`;
+    }
+  }
+
   document.getElementById('create-conversation')?.addEventListener('click', createTestConversation);
+  document.getElementById('quick-create-conversation')?.addEventListener('click', quickCreateConversation);
 
   document.getElementById('test-send-original')?.addEventListener('click', () => {
     testAPI('/api/send-message', 'Original API');

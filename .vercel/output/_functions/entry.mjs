@@ -1,6 +1,6 @@
 import { renderers } from './renderers.mjs';
-import { c as createExports, s as serverEntrypointModule } from './chunks/_@astrojs-ssr-adapter_B-6jzXmM.mjs';
-import { manifest } from './manifest_OSrobDfS.mjs';
+import { c as createExports, s as serverEntrypointModule } from './chunks/_@astrojs-ssr-adapter_C4o_NOcT.mjs';
+import { manifest } from './manifest_Cw0iLat8.mjs';
 
 const serverIslandMap = new Map();;
 
@@ -19,42 +19,55 @@ const _page11 = () => import('./pages/api/community/post.astro.mjs');
 const _page12 = () => import('./pages/api/community/update.astro.mjs');
 const _page13 = () => import('./pages/api/conversation-unread-counts.astro.mjs');
 const _page14 = () => import('./pages/api/create-conversation.astro.mjs');
-const _page15 = () => import('./pages/api/debug-conversation.astro.mjs');
-const _page16 = () => import('./pages/api/debug-send-message.astro.mjs');
-const _page17 = () => import('./pages/api/encryption/check-keys/_userid_.astro.mjs');
-const _page18 = () => import('./pages/api/encryption/check-migration.astro.mjs');
-const _page19 = () => import('./pages/api/encryption/get-keys/_userid_.astro.mjs');
-const _page20 = () => import('./pages/api/encryption/get-public-key/_userid_.astro.mjs');
-const _page21 = () => import('./pages/api/encryption/store-keys.astro.mjs');
-const _page22 = () => import('./pages/api/get-messages.astro.mjs');
-const _page23 = () => import('./pages/api/health-check.astro.mjs');
-const _page24 = () => import('./pages/api/mark-messages-read.astro.mjs');
-const _page25 = () => import('./pages/api/moderation/report.astro.mjs');
-const _page26 = () => import('./pages/api/my-conversations.astro.mjs');
-const _page27 = () => import('./pages/api/repair-conversation.astro.mjs');
-const _page28 = () => import('./pages/api/search-users.astro.mjs');
-const _page29 = () => import('./pages/api/send-encrypted-message.astro.mjs');
-const _page30 = () => import('./pages/api/send-message.astro.mjs');
-const _page31 = () => import('./pages/api/test-message.astro.mjs');
-const _page32 = () => import('./pages/api/test-supabase.astro.mjs');
-const _page33 = () => import('./pages/api/unread-count.astro.mjs');
-const _page34 = () => import('./pages/api/upload-image.astro.mjs');
-const _page35 = () => import('./pages/c/_id_.astro.mjs');
-const _page36 = () => import('./pages/communities/create.astro.mjs');
-const _page37 = () => import('./pages/communities.astro.mjs');
-const _page38 = () => import('./pages/encryption-status.astro.mjs');
-const _page39 = () => import('./pages/explore.astro.mjs');
-const _page40 = () => import('./pages/inbox/messagebutton.astro.mjs');
-const _page41 = () => import('./pages/inbox/_id_.astro.mjs');
-const _page42 = () => import('./pages/inbox.astro.mjs');
-const _page43 = () => import('./pages/login.astro.mjs');
-const _page44 = () => import('./pages/post.astro.mjs');
-const _page45 = () => import('./pages/profile/_id_.astro.mjs');
-const _page46 = () => import('./pages/project/_id_.astro.mjs');
-const _page47 = () => import('./pages/services.astro.mjs');
-const _page48 = () => import('./pages/settings.astro.mjs');
-const _page49 = () => import('./pages/signup.astro.mjs');
-const _page50 = () => import('./pages/index.astro.mjs');
+const _page15 = () => import('./pages/api/create-test-conversation.astro.mjs');
+const _page16 = () => import('./pages/api/debug-conversation.astro.mjs');
+const _page17 = () => import('./pages/api/debug-env.astro.mjs');
+const _page18 = () => import('./pages/api/debug-inbox.astro.mjs');
+const _page19 = () => import('./pages/api/debug-send-message.astro.mjs');
+const _page20 = () => import('./pages/api/encryption/auto-store-keys.astro.mjs');
+const _page21 = () => import('./pages/api/encryption/check-keys/_userid_.astro.mjs');
+const _page22 = () => import('./pages/api/encryption/check-migration.astro.mjs');
+const _page23 = () => import('./pages/api/encryption/get-keys/_userid_.astro.mjs');
+const _page24 = () => import('./pages/api/encryption/get-public-key/_userid_.astro.mjs');
+const _page25 = () => import('./pages/api/encryption/store-keys.astro.mjs');
+const _page26 = () => import('./pages/api/get-messages.astro.mjs');
+const _page27 = () => import('./pages/api/health-check.astro.mjs');
+const _page28 = () => import('./pages/api/list-conversations.astro.mjs');
+const _page29 = () => import('./pages/api/mark-messages-read.astro.mjs');
+const _page30 = () => import('./pages/api/moderation/report.astro.mjs');
+const _page31 = () => import('./pages/api/my-conversations.astro.mjs');
+const _page32 = () => import('./pages/api/repair-conversation.astro.mjs');
+const _page33 = () => import('./pages/api/search-users.astro.mjs');
+const _page34 = () => import('./pages/api/send-encrypted-message.astro.mjs');
+const _page35 = () => import('./pages/api/send-message.astro.mjs');
+const _page36 = () => import('./pages/api/test-auth.astro.mjs');
+const _page37 = () => import('./pages/api/test-conversation-setup.astro.mjs');
+const _page38 = () => import('./pages/api/test-message.astro.mjs');
+const _page39 = () => import('./pages/api/test-supabase.astro.mjs');
+const _page40 = () => import('./pages/api/unread-count.astro.mjs');
+const _page41 = () => import('./pages/api/upload-image.astro.mjs');
+const _page42 = () => import('./pages/c/_id_.astro.mjs');
+const _page43 = () => import('./pages/communities/create.astro.mjs');
+const _page44 = () => import('./pages/communities.astro.mjs');
+const _page45 = () => import('./pages/conversation-debug.astro.mjs');
+const _page46 = () => import('./pages/encryption-status.astro.mjs');
+const _page47 = () => import('./pages/explore.astro.mjs');
+const _page48 = () => import('./pages/inbox/messagebutton.astro.mjs');
+const _page49 = () => import('./pages/inbox/_id_.astro.mjs');
+const _page50 = () => import('./pages/inbox.astro.mjs');
+const _page51 = () => import('./pages/inbox-debug.astro.mjs');
+const _page52 = () => import('./pages/login.astro.mjs');
+const _page53 = () => import('./pages/post.astro.mjs');
+const _page54 = () => import('./pages/profile/_id_.astro.mjs');
+const _page55 = () => import('./pages/project/_id_.astro.mjs');
+const _page56 = () => import('./pages/services.astro.mjs');
+const _page57 = () => import('./pages/settings.astro.mjs');
+const _page58 = () => import('./pages/signup.astro.mjs');
+const _page59 = () => import('./pages/simple-chat.astro.mjs');
+const _page60 = () => import('./pages/system-status.astro.mjs');
+const _page61 = () => import('./pages/test-conversation.astro.mjs');
+const _page62 = () => import('./pages/test-imports.astro.mjs');
+const _page63 = () => import('./pages/index.astro.mjs');
 const pageMap = new Map([
     ["node_modules/astro/dist/assets/endpoint/generic.js", _page0],
     ["src/pages/404.astro", _page1],
@@ -71,42 +84,55 @@ const pageMap = new Map([
     ["src/pages/api/community/update.ts", _page12],
     ["src/pages/api/conversation-unread-counts.ts", _page13],
     ["src/pages/api/create-conversation.ts", _page14],
-    ["src/pages/api/debug-conversation.ts", _page15],
-    ["src/pages/api/debug-send-message.ts", _page16],
-    ["src/pages/api/encryption/check-keys/[userId].ts", _page17],
-    ["src/pages/api/encryption/check-migration.ts", _page18],
-    ["src/pages/api/encryption/get-keys/[userId].ts", _page19],
-    ["src/pages/api/encryption/get-public-key/[userId].ts", _page20],
-    ["src/pages/api/encryption/store-keys.ts", _page21],
-    ["src/pages/api/get-messages.ts", _page22],
-    ["src/pages/api/health-check.ts", _page23],
-    ["src/pages/api/mark-messages-read.ts", _page24],
-    ["src/pages/api/moderation/report.ts", _page25],
-    ["src/pages/api/my-conversations.ts", _page26],
-    ["src/pages/api/repair-conversation.ts", _page27],
-    ["src/pages/api/search-users.ts", _page28],
-    ["src/pages/api/send-encrypted-message.ts", _page29],
-    ["src/pages/api/send-message.ts", _page30],
-    ["src/pages/api/test-message.ts", _page31],
-    ["src/pages/api/test-supabase.ts", _page32],
-    ["src/pages/api/unread-count.ts", _page33],
-    ["src/pages/api/upload-image.ts", _page34],
-    ["src/pages/c/[id].astro", _page35],
-    ["src/pages/communities/create.astro", _page36],
-    ["src/pages/communities/index.astro", _page37],
-    ["src/pages/encryption-status.astro", _page38],
-    ["src/pages/explore.astro", _page39],
-    ["src/pages/inbox/messagebutton.astro", _page40],
-    ["src/pages/inbox/[id].astro", _page41],
-    ["src/pages/inbox/index.astro", _page42],
-    ["src/pages/login.astro", _page43],
-    ["src/pages/post.astro", _page44],
-    ["src/pages/profile/[id].astro", _page45],
-    ["src/pages/project/[id].astro", _page46],
-    ["src/pages/services.astro", _page47],
-    ["src/pages/settings.astro", _page48],
-    ["src/pages/signup.astro", _page49],
-    ["src/pages/index.astro", _page50]
+    ["src/pages/api/create-test-conversation.ts", _page15],
+    ["src/pages/api/debug-conversation.ts", _page16],
+    ["src/pages/api/debug-env.ts", _page17],
+    ["src/pages/api/debug-inbox.ts", _page18],
+    ["src/pages/api/debug-send-message.ts", _page19],
+    ["src/pages/api/encryption/auto-store-keys.ts", _page20],
+    ["src/pages/api/encryption/check-keys/[userId].ts", _page21],
+    ["src/pages/api/encryption/check-migration.ts", _page22],
+    ["src/pages/api/encryption/get-keys/[userId].ts", _page23],
+    ["src/pages/api/encryption/get-public-key/[userId].ts", _page24],
+    ["src/pages/api/encryption/store-keys.ts", _page25],
+    ["src/pages/api/get-messages.ts", _page26],
+    ["src/pages/api/health-check.ts", _page27],
+    ["src/pages/api/list-conversations.ts", _page28],
+    ["src/pages/api/mark-messages-read.ts", _page29],
+    ["src/pages/api/moderation/report.ts", _page30],
+    ["src/pages/api/my-conversations.ts", _page31],
+    ["src/pages/api/repair-conversation.ts", _page32],
+    ["src/pages/api/search-users.ts", _page33],
+    ["src/pages/api/send-encrypted-message.ts", _page34],
+    ["src/pages/api/send-message.ts", _page35],
+    ["src/pages/api/test-auth.ts", _page36],
+    ["src/pages/api/test-conversation-setup.ts", _page37],
+    ["src/pages/api/test-message.ts", _page38],
+    ["src/pages/api/test-supabase.ts", _page39],
+    ["src/pages/api/unread-count.ts", _page40],
+    ["src/pages/api/upload-image.ts", _page41],
+    ["src/pages/c/[id].astro", _page42],
+    ["src/pages/communities/create.astro", _page43],
+    ["src/pages/communities/index.astro", _page44],
+    ["src/pages/conversation-debug.astro", _page45],
+    ["src/pages/encryption-status.astro", _page46],
+    ["src/pages/explore.astro", _page47],
+    ["src/pages/inbox/messagebutton.astro", _page48],
+    ["src/pages/inbox/[id].astro", _page49],
+    ["src/pages/inbox/index.astro", _page50],
+    ["src/pages/inbox-debug.astro", _page51],
+    ["src/pages/login.astro", _page52],
+    ["src/pages/post.astro", _page53],
+    ["src/pages/profile/[id].astro", _page54],
+    ["src/pages/project/[id].astro", _page55],
+    ["src/pages/services.astro", _page56],
+    ["src/pages/settings.astro", _page57],
+    ["src/pages/signup.astro", _page58],
+    ["src/pages/simple-chat.astro", _page59],
+    ["src/pages/system-status.astro", _page60],
+    ["src/pages/test-conversation.astro", _page61],
+    ["src/pages/test-imports.astro", _page62],
+    ["src/pages/index.astro", _page63]
 ]);
 
 const _manifest = Object.assign(manifest, {
@@ -117,7 +143,7 @@ const _manifest = Object.assign(manifest, {
     middleware: () => import('./_noop-middleware.mjs')
 });
 const _args = {
-    "middlewareSecret": "2bce4a81-3b3f-42c3-998f-dbe74f6e4817",
+    "middlewareSecret": "0de80c3c-4c2d-4837-961d-6552ac87d8b7",
     "skewProtection": false
 };
 const _exports = createExports(_manifest, _args);

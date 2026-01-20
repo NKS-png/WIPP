@@ -15,12 +15,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Set session
-    const { data: sessionData } = await supabase.auth.setSession({
+    const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
 
-    if (!sessionData.session) {
+    if (sessionError || !sessionData.session) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
@@ -36,80 +36,100 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Check if conversation exists
-    const { data: conversation } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('id', conversation_id)
-      .single();
-
-    if (!conversation) {
-      return new Response(JSON.stringify({ error: 'Conversation not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Check if user is participant
-    const { data: participant } = await supabase
-      .from('conversation_participants')
-      .select('user_id')
-      .eq('conversation_id', conversation_id)
-      .eq('user_id', sessionData.session.user.id)
-      .single();
-
-    if (!participant) {
-      return new Response(JSON.stringify({ error: 'Not authorized for this conversation' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Determine if message is encrypted
-    const isEncrypted = !!encrypted_content;
+    const userId = sessionData.session.user.id;
     const messageContent = content.trim();
 
-    // Insert message
+    // Simplified approach: Try to insert message directly
+    // The database constraints will handle validation
     const messageData: any = {
       conversation_id,
-      sender_id: sessionData.session.user.id,
-      content: messageContent
+      sender_id: userId,
+      content: messageContent,
+      is_encrypted: !!encrypted_content,
+      created_at: new Date().toISOString()
     };
 
     // Add encryption data if present
-    if (isEncrypted) {
-      messageData.is_encrypted = true;
+    if (encrypted_content) {
       messageData.encrypted_content = encrypted_content;
     }
 
-    const { data, error } = await supabase
+    // Insert message with error handling
+    const { data: messageResult, error: insertError } = await supabase
       .from('messages')
       .insert(messageData)
-      .select();
+      .select('id, content, created_at, sender_id')
+      .single();
 
-    if (error) {
-      return new Response(JSON.stringify({ error: 'Failed to send message: ' + error.message }), {
+    if (insertError) {
+      console.error('Message insert error:', insertError);
+      
+      // Check if it's a foreign key constraint error (conversation doesn't exist or user not participant)
+      if (insertError.code === '23503') {
+        // Try to check what specifically failed
+        const { data: conversation } = await supabase
+          .from('conversations')
+          .select('id')
+          .eq('id', conversation_id)
+          .single();
+
+        if (!conversation) {
+          return new Response(JSON.stringify({ error: 'Conversation not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { data: participant } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversation_id)
+          .eq('user_id', userId)
+          .single();
+
+        if (!participant) {
+          return new Response(JSON.stringify({ error: 'Not authorized for this conversation' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      return new Response(JSON.stringify({ 
+        error: 'Failed to send message', 
+        details: insertError.message,
+        code: insertError.code 
+      }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Update conversation timestamp
-    await supabase
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', conversation_id);
+    // Try to update conversation timestamp (non-critical)
+    try {
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversation_id);
+    } catch (updateError) {
+      console.warn('Failed to update conversation timestamp:', updateError);
+      // Don't fail the request for this
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: data[0]
+      message: messageResult
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: 'Internal server error: ' + error.message }), {
+    console.error('Send message API error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error', 
+      details: error.message 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

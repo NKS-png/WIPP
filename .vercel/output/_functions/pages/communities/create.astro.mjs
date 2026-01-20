@@ -1,7 +1,7 @@
 /* empty css                                    */
-import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_DIkOM8_r.mjs';
+import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_CvuIRyz4.mjs';
 import 'piccolore';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_Br4iNQNp.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_SShpJa9a.mjs';
 import { s as supabase } from '../../chunks/supabase_CDb81jFl.mjs';
 /* empty css                                     */
 export { renderers } from '../../renderers.mjs';

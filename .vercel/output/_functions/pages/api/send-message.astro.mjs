@@ -21,7 +21,7 @@ const POST = async ({ request, cookies }) => {
         headers: { "Content-Type": "application/json" }
       });
     }
-    const { conversation_id, content } = await request.json();
+    const { conversation_id, content, encrypted_content } = await request.json();
     if (!conversation_id || !content) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
@@ -42,11 +42,18 @@ const POST = async ({ request, cookies }) => {
         headers: { "Content-Type": "application/json" }
       });
     }
-    const { data, error } = await supabase.from("messages").insert({
+    const isEncrypted = !!encrypted_content;
+    const messageContent = content.trim();
+    const messageData = {
       conversation_id,
       sender_id: sessionData.session.user.id,
-      content: content.trim()
-    }).select();
+      content: messageContent
+    };
+    if (isEncrypted) {
+      messageData.is_encrypted = true;
+      messageData.encrypted_content = encrypted_content;
+    }
+    const { data, error } = await supabase.from("messages").insert(messageData).select();
     if (error) {
       return new Response(JSON.stringify({ error: "Failed to send message: " + error.message }), {
         status: 500,

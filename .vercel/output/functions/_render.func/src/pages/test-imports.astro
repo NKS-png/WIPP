@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Test Imports">
+  <div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-8">Test Dynamic Imports</h1>
+    
+    <div class="space-y-6">
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+        <h2 class="text-xl font-bold mb-4">Test Supabase Import</h2>
+        <button 
+          id="test-supabase-import" 
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Test Supabase Import
+        </button>
+        
+        <div id="supabase-results" class="mt-4 hidden">
+          <pre id="supabase-content" class="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg text-sm overflow-auto max-h-96"></pre>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+        <h2 class="text-xl font-bold mb-4">Test Auto Encryption Import</h2>
+        <button 
+          id="test-encryption-import" 
+          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Test Auto Encryption Import
+        </button>
+        
+        <div id="encryption-results" class="mt-4 hidden">
+          <pre id="encryption-content" class="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg text-sm overflow-auto max-h-96"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Test supabase import
+  document.getElementById('test-supabase-import')?.addEventListener('click', async () => {
+    try {
+      const supabaseModule = await import('../lib/supabase.js');
+      const supabase = supabaseModule.supabase;
+      
+      const resultsDiv = document.getElementById('supabase-results');
+      const resultsContent = document.getElementById('supabase-content');
+      
+      if (resultsDiv && resultsContent) {
+        resultsDiv.classList.remove('hidden');
+        resultsContent.textContent = JSON.stringify({
+          success: true,
+          message: 'Supabase JS imported successfully',
+          hasSupabase: !!supabase,
+          supabaseUrl: supabase?.supabaseUrl || 'Not available'
+        }, null, 2);
+      }
+    } catch (error) {
+      const resultsDiv = document.getElementById('supabase-results');
+      const resultsContent = document.getElementById('supabase-content');
+      
+      if (resultsDiv && resultsContent) {
+        resultsDiv.classList.remove('hidden');
+        resultsContent.textContent = JSON.stringify({
+          success: false,
+          error: error.message,
+          stack: error.stack
+        }, null, 2);
+      }
+    }
+  });
+
+  // Test auto encryption import
+  document.getElementById('test-encryption-import')?.addEventListener('click', async () => {
+    try {
+      const autoEncryptionModule = await import('../lib/autoEncryption.js');
+      const autoEncryption = autoEncryptionModule.autoEncryption;
+      
+      const resultsDiv = document.getElementById('encryption-results');
+      const resultsContent = document.getElementById('encryption-content');
+      
+      if (resultsDiv && resultsContent) {
+        resultsDiv.classList.remove('hidden');
+        resultsContent.textContent = JSON.stringify({
+          success: true,
+          message: 'Auto encryption imported successfully',
+          hasAutoEncryption: !!autoEncryption,
+          isReady: autoEncryption?.isReady() || false
+        }, null, 2);
+      }
+    } catch (error) {
+      const resultsDiv = document.getElementById('encryption-results');
+      const resultsContent = document.getElementById('encryption-content');
+      
+      if (resultsDiv && resultsContent) {
+        resultsDiv.classList.remove('hidden');
+        resultsContent.textContent = JSON.stringify({
+          success: false,
+          error: error.message,
+          stack: error.stack
+        }, null, 2);
+      }
+    }
+  });
+</script>
+</BaseLayout>

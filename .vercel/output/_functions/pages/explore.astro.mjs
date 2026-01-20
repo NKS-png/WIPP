@@ -1,7 +1,7 @@
 /* empty css                                 */
-import { e as createComponent, f as createAstro, r as renderTemplate, k as renderComponent, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_DIkOM8_r.mjs';
+import { e as createComponent, f as createAstro, r as renderTemplate, k as renderComponent, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_CvuIRyz4.mjs';
 import 'piccolore';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_Br4iNQNp.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_SShpJa9a.mjs';
 import { s as supabase } from '../chunks/supabase_CDb81jFl.mjs';
 /* empty css                                   */
 export { renderers } from '../renderers.mjs';
@@ -19,11 +19,7 @@ const $$Explore = createComponent(async ($$result, $$props, $$slots) => {
     const hash = username.split("").reduce((a, b) => a + b.charCodeAt(0), 0);
     const emoji = emojis[hash % emojis.length];
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3f4f6"/><text x="50" y="65" font-size="50" text-anchor="middle">${emoji}</text></svg>`;
-    try {
-      return `data:image/svg+xml;base64,${btoa(svg)}`;
-    } catch (error2) {
-      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-    }
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   }
   const category = Astro2.url.searchParams.get("category");
   const query = Astro2.url.searchParams.get("q");

@@ -1,0 +1,1 @@
+const s={initializeForUser:async e=>(console.log("Auto encryption disabled for serverless compatibility"),!1),isReady:()=>!1,encryptMessageForUser:async(e,r)=>{throw new Error("Encryption disabled for serverless compatibility")},decryptMessage:async e=>{throw new Error("Encryption disabled for serverless compatibility")}};export{s as autoEncryption};

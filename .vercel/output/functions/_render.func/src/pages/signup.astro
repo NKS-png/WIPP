@@ -77,6 +77,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script>
   import { supabase } from '../lib/supabase';
 
+  // Auto encryption disabled for serverless compatibility
+  console.log('Auto encryption disabled for serverless compatibility');
+
   // --- AUDIO SETUP ---
   const clickAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
   clickAudio.volume = 0.5;
@@ -189,7 +192,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
          }
       }
 
-      // D. SUCCESS
+      // D. AUTOMATIC ENCRYPTION DISABLED
+      console.log('Automatic encryption disabled for serverless compatibility');
+
+      // E. SUCCESS
       showMessage("Account created! Redirecting...", "success");
       setTimeout(() => window.location.href = '/login?message=Account created', 1500);
 

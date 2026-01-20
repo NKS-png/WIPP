@@ -76,11 +76,27 @@
 			"dest": "_render"
 		},
 		{
+			"src": "^/api/create-test-conversation/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/api/debug-conversation/?$",
 			"dest": "_render"
 		},
 		{
+			"src": "^/api/debug-env/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/debug-inbox/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/api/debug-send-message/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/encryption/auto-store-keys/?$",
 			"dest": "_render"
 		},
 		{
@@ -112,6 +128,10 @@
 			"dest": "_render"
 		},
 		{
+			"src": "^/api/list-conversations/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/api/mark-messages-read/?$",
 			"dest": "_render"
 		},
@@ -137,6 +157,14 @@
 		},
 		{
 			"src": "^/api/send-message/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/test-auth/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/test-conversation-setup/?$",
 			"dest": "_render"
 		},
 		{
@@ -168,6 +196,10 @@
 			"dest": "_render"
 		},
 		{
+			"src": "^/conversation-debug/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/encryption-status/?$",
 			"dest": "_render"
 		},
@@ -185,6 +217,10 @@
 		},
 		{
 			"src": "^/inbox/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/inbox-debug/?$",
 			"dest": "_render"
 		},
 		{
@@ -213,6 +249,22 @@
 		},
 		{
 			"src": "^/signup/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/simple-chat/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/system-status/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/test-conversation/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/test-imports/?$",
 			"dest": "_render"
 		},
 		{

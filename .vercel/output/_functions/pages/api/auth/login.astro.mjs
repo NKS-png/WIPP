@@ -22,16 +22,16 @@ const POST = async ({ request, cookies, redirect }) => {
       cookies.set("sb-access-token", session.access_token, {
         path: "/",
         httpOnly: false,
-        secure: true,
-        sameSite: "strict" ,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         maxAge: 60 * 60 * 24 * 7
         // 1 week
       });
       cookies.set("sb-refresh-token", session.refresh_token, {
         path: "/",
         httpOnly: false,
-        secure: true,
-        sameSite: "strict" ,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         maxAge: 60 * 60 * 24 * 30
         // 30 days
       });

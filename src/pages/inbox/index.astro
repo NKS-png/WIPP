@@ -462,8 +462,7 @@ const hasConversations = sortedConversations.length > 0;
 <script>
   // Import modules
   let supabase = null;
-  let autoEncryption = null;
-  
+
   // Initialize modules
   async function initializeModules() {
     try {
@@ -473,14 +472,7 @@ const hasConversations = sortedConversations.length > 0;
       console.error('Failed to load supabase:', error);
       return false;
     }
-    
-    try {
-      const autoEncryptionModule = await import('../../lib/autoEncryption.js');
-      autoEncryption = autoEncryptionModule.autoEncryption;
-    } catch (error) {
-      console.log('Auto encryption not available:', error.message);
-    }
-    
+
     return true;
   }
 
@@ -747,28 +739,8 @@ const hasConversations = sortedConversations.length > 0;
   }
 
   function initializeInbox() {
-    // Initialize automatic encryption for current user
-    async function initializeAutoEncryption() {
-      if (autoEncryption) {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user?.id) {
-            console.log('Initializing automatic encryption for user:', session.user.id);
-            const success = await autoEncryption.initializeForUser(session.user.id);
-            if (success) {
-              console.log('Automatic encryption initialized successfully');
-            } else {
-              console.log('Failed to initialize automatic encryption');
-            }
-          }
-        } catch (error) {
-          console.error('Error initializing automatic encryption:', error);
-        }
-      }
-    }
-
-    // Initialize encryption on page load
-    initializeAutoEncryption();
+    // Note: Auto-encryption functionality disabled for serverless compatibility
+    console.log('Initializing inbox without encryption...');
 
   // Search functionality
   const searchInput = document.getElementById('search-input');
@@ -1113,25 +1085,11 @@ const hasConversations = sortedConversations.length > 0;
     sendMessageBtn.textContent = 'Sending...';
 
     try {
-      // Prepare request body
+      // Prepare request body (encryption disabled for serverless compatibility)
       let requestBody = {
         target_user_id: selectedUserId,
         initial_message: messageInput.value.trim()
       };
-
-      // Try to encrypt the message if auto encryption is available
-      if (autoEncryption && autoEncryption.isReady()) {
-        try {
-          const encryptedData = await autoEncryption.encryptMessageForUser(
-            messageInput.value.trim(), 
-            selectedUserId
-          );
-          requestBody.encrypted_content = encryptedData;
-        } catch (encryptError) {
-          console.error('Encryption failed, sending unencrypted:', encryptError);
-          // Continue with unencrypted message
-        }
-      }
 
       // Create conversation
       const response = await fetch('/api/create-conversation', {

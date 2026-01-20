@@ -1,1 +1,0 @@
-import"./supabase.DCKg3lBM.js";import"./index.C1Qlw3jS.js";console.log("Auto encryption disabled for serverless compatibility");async function i(){console.log("Encryption initialization disabled for serverless compatibility")}setTimeout(i,1e3);

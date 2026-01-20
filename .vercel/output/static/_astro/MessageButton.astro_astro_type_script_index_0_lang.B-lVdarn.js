@@ -1,1 +1,0 @@
-import{openChat as n}from"./supabase.DCKg3lBM.js";import"./index.C1Qlw3jS.js";document.addEventListener("click",t=>{const e=t.target.closest('[id^="message-btn-"]');if(e){t.preventDefault();const i=e.getAttribute("data-user-id");i&&n(i)}});

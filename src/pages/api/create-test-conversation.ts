@@ -70,7 +70,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { data: newConversation, error: conversationError } = await supabase
       .from('conversations')
       .insert({
-        title: 'New Conversation',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

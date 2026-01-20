@@ -50,7 +50,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .from('conversations')
       .upsert({
         id: conversationId,
-        title: 'Test Chat',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });

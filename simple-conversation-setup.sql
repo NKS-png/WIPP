@@ -1,10 +1,10 @@
 -- Simple conversation setup - run this in Supabase SQL Editor
+-- Fixed to work with actual table structure (no title column)
 
--- Step 1: Create a conversation
-INSERT INTO conversations (id, title, created_at, updated_at)
+-- Step 1: Create a conversation (without title column)
+INSERT INTO conversations (id, created_at, updated_at)
 VALUES (
   '12345678-1234-1234-1234-123456789abc',
-  'Test Chat',
   now(),
   now()
 );
@@ -28,7 +28,7 @@ VALUES (
 -- Step 4: Verify it worked
 SELECT 
   c.id as conversation_id,
-  c.title,
+  c.created_at,
   cp.user_id,
   p.username
 FROM conversations c

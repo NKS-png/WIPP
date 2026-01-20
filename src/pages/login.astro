@@ -66,90 +66,15 @@ const message = url.searchParams.get('message');
 <script>
   import { supabase } from '../lib/supabase';
 
-  // Import auto encryption module
-  let autoEncryption = null;
-  
-  async function loadAutoEncryption() {
-    try {
-      const autoEncryptionModule = await import('../lib/autoEncryption.js');
-      autoEncryption = autoEncryptionModule.autoEncryption;
-    } catch (error) {
-      console.log('Auto encryption not available:', error.message);
-    }
-  }
+  // Auto encryption disabled for serverless compatibility
+  console.log('Auto encryption disabled for serverless compatibility');
 
-  // Load auto encryption on page load
-  loadAutoEncryption();
-
-  // 1. Define a clean "Pop" sound (Base64 encoded to avoid external files)
-  const popSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder; replace with actual base64 below for real sound
-  
-  // Real "Click/Pop" Sound (Short UI sound)
-  const clickAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
-  clickAudio.volume = 0.5;
-
-  const form = document.getElementById('loginForm');
-  const btn = document.getElementById('submitBtn');
-  const btnText = document.getElementById('btnText');
-  const btnSpinner = document.getElementById('btnSpinner');
-  const inputs = document.querySelectorAll('input');
-
-  // Play subtle sound on input focus
-  inputs.forEach(input => {
-    input.addEventListener('focus', () => {
-       // Optional: Very quiet sound on focus
-       // clickAudio.currentTime = 0;
-       // clickAudio.play();
-    });
-  });
-
-  // Handle Form Submission
-  form.addEventListener('submit', (e) => {
-    // 1. Play Sound
-    const playPromise = clickAudio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        // Auto-play was prevented
-      });
-    }
-
-    // 2. Visual Animation State
-    btn.setAttribute('disabled', 'true'); // Prevent double clicks
-    btn.classList.add('cursor-not-allowed', 'opacity-80');
-    
-    // Hide text, show spinner
-    btnText.textContent = "Authenticating...";
-    btnSpinner.classList.remove('hidden');
-    
-    // The form will now proceed to submit to the server...
-  });
-
-  // Initialize encryption after successful login
+  // Initialize encryption after successful login (disabled)
   async function initializeEncryptionAfterLogin() {
-    // Check if we're being redirected from a successful login
-    const urlParams = new URLSearchParams(window.location.search);
-    const loginSuccess = urlParams.get('login') === 'success';
-    
-    if (loginSuccess && autoEncryption) {
-      try {
-        // Get current user session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user?.id) {
-          console.log('Initializing automatic encryption after login:', session.user.id);
-          const encryptionSuccess = await autoEncryption.initializeForUser(session.user.id);
-          if (encryptionSuccess) {
-            console.log('Automatic encryption initialized successfully after login');
-          } else {
-            console.log('Failed to initialize automatic encryption after login');
-          }
-        }
-      } catch (error) {
-        console.error('Error initializing encryption after login:', error);
-      }
-    }
+    console.log('Encryption initialization disabled for serverless compatibility');
   }
 
-  // Try to initialize encryption after page load
+  // Try to initialize encryption after page load (disabled)
   setTimeout(initializeEncryptionAfterLogin, 1000);
 </script>
 

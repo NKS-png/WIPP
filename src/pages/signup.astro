@@ -77,20 +77,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script>
   import { supabase } from '../lib/supabase';
 
-  // Import auto encryption module
-  let autoEncryption = null;
-  
-  async function loadAutoEncryption() {
-    try {
-      const autoEncryptionModule = await import('../lib/autoEncryption.js');
-      autoEncryption = autoEncryptionModule.autoEncryption;
-    } catch (error) {
-      console.log('Auto encryption not available:', error.message);
-    }
-  }
-
-  // Load auto encryption on page load
-  loadAutoEncryption();
+  // Auto encryption disabled for serverless compatibility
+  console.log('Auto encryption disabled for serverless compatibility');
 
   // --- AUDIO SETUP ---
   const clickAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
@@ -204,21 +192,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
          }
       }
 
-      // D. INITIALIZE AUTOMATIC ENCRYPTION
-      if (autoEncryption) {
-        try {
-          console.log('Initializing automatic encryption for new user:', authData.user.id);
-          const encryptionSuccess = await autoEncryption.initializeForUser(authData.user.id);
-          if (encryptionSuccess) {
-            console.log('Automatic encryption initialized successfully for new user');
-          } else {
-            console.log('Failed to initialize automatic encryption for new user');
-          }
-        } catch (encryptionError) {
-          console.error('Error initializing automatic encryption:', encryptionError);
-          // Don't fail the signup process if encryption fails
-        }
-      }
+      // D. AUTOMATIC ENCRYPTION DISABLED
+      console.log('Automatic encryption disabled for serverless compatibility');
 
       // E. SUCCESS
       showMessage("Account created! Redirecting...", "success");

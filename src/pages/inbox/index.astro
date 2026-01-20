@@ -508,8 +508,8 @@ const hasConversations = sortedConversations.length > 0;
       return;
     }
     
-    // Initialize the inbox interface with automatic encryption
-    initializeInbox();
+    // Initialize the inbox interface (encryption disabled for serverless compatibility)
+    initializeInboxBasic();
   });
 
   // Basic inbox functionality without encryption

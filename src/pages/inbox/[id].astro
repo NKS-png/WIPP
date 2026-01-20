@@ -412,8 +412,8 @@ try {
       return;
     }
     
-    // Initialize the chat interface with automatic encryption
-    initializeChat();
+    // Initialize the chat interface (encryption disabled for serverless compatibility)
+    initializeChatBasic();
   });
 
   // Basic chat functionality without encryption

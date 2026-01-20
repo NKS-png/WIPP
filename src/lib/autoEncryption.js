@@ -1,53 +1,22 @@
-// Automatic E2E Encryption System
-// This module handles automatic key generation and encryption for all users
+// Temporary stub for autoEncryption to fix Vercel deployment
+// The full encryption system is disabled until serverless compatibility is resolved
 
-class AutoEncryption {
-  constructor() {
-    this.isInitialized = false;
-    this.keyPair = null;
-    this.userId = null;
+export const autoEncryption = {
+  initializeForUser: async (userId) => {
+    console.log('Auto encryption disabled for serverless compatibility');
+    return false;
+  },
+  
+  isReady: () => false,
+  
+  encryptMessageForUser: async (message, targetUserId) => {
+    throw new Error('Encryption disabled for serverless compatibility');
+  },
+  
+  decryptMessage: async (encryptedData) => {
+    throw new Error('Encryption disabled for serverless compatibility');
   }
-
-  // Initialize encryption for a user automatically
-  async initializeForUser(userId) {
-    try {
-      this.userId = userId;
-      
-      // Check if user already has keys
-      const existingKeys = await this.getUserKeys(userId);
-      
-      if (existingKeys) {
-        // User has keys, try to load them
-        await this.loadExistingKeys(existingKeys);
-      } else {
-        // Generate new keys automatically
-        await this.generateAndStoreKeys(userId);
-      }
-      
-      this.isInitialized = true;
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize encryption:', error);
-      return false;
-    }
-  }
-
-  // Generate new encryption keys automatically
-  async generateAndStoreKeys(userId) {
-    try {
-      // Generate RSA key pair
-      const keyPair = await window.crypto.subtle.generateKey(
-        {
-          name: 'RSA-OAEP',
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([1, 0, 1]),
-          hash: 'SHA-256',
-        },
-        true,
-        ['encrypt', 'decrypt']
-      );
-
-      // Export keys
+};
       const publicKey = await window.crypto.subtle.exportKey('spki', keyPair.publicKey);
       const privateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
 

@@ -11,22 +11,11 @@ export default defineConfig({
     },
     speedInsights: {
       enabled: true
-    },
-    edgeMiddleware: false,
-    functionPerRoute: false
+    }
   }),
-  build: {
-    inlineStylesheets: 'auto'
-  },
   vite: {
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-    },
     ssr: {
       noExternal: ['@supabase/supabase-js']
-    },
-    optimizeDeps: {
-      exclude: ['@supabase/supabase-js']
     }
   }
 });

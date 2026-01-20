@@ -41,19 +41,19 @@ const displayInitial = displayName.charAt(0).toUpperCase();
   <div class="bg-stone-50/95 dark:bg-stone-900/95 backdrop-blur-sm border border-stone-200 dark:border-stone-700 rounded-2xl">
     <div class="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center gap-4">
     
-    <div class="flex items-center gap-8">
-      <a href="/" class="flex items-center gap-2 group relative z-[70]">
+    <div class="flex items-center gap-6 lg:gap-8">
+      <a href="/" class="flex items-center gap-2 group relative z-[70] flex-shrink-0">
         <img src="/logo.png" alt="Logo" class="h-16 w-auto dark:hidden group-hover:scale-105 transition-transform object-contain" />
         <img src="/darklogo.png" alt="Logo" class="h-16 w-auto hidden dark:block group-hover:scale-105 transition-transform object-contain" />
       </a>
       
-      <div class="hidden md:flex items-center gap-8 text-base font-normal text-stone-600 dark:text-stone-400">
-        <a href="/explore" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Explore</a>
-        <a href="/about" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">About</a>
-        <a href="/support" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Support</a>
-        <a href="/communities" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors">Communities</a>
+      <div class="hidden lg:flex items-center gap-6 text-base font-normal text-stone-600 dark:text-stone-400">
+        <a href="/explore" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors whitespace-nowrap">Explore</a>
+        <a href="/about" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors whitespace-nowrap">About</a>
+        <a href="/support" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors whitespace-nowrap">Support</a>
+        <a href="/communities" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors whitespace-nowrap">Communities</a>
         {session && !Astro.url.pathname.includes('/inbox') && (
-          <a href="/inbox" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors relative" id="inbox-link">
+          <a href="/inbox" class="hover:text-stone-800 dark:hover:text-stone-200 transition-colors relative whitespace-nowrap" id="inbox-link">
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -66,11 +66,11 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       </div>
     </div>
 
-    <div class="flex-1 max-w-md hidden md:block relative">
+    <div class="flex-1 max-w-xs lg:max-w-md mx-4 hidden md:block relative">
       <UnifiedSearch showInNavbar={true} />
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-shrink-0">
       <ThemeToggle />
 
       <button id="mobile-menu-btn" class="md:hidden p-2 -mr-2 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-stone-800 dark:text-stone-200 relative z-[70]">
@@ -82,7 +82,7 @@ const displayInitial = displayName.charAt(0).toUpperCase();
       <div class="hidden md:flex items-center gap-4">
         {session ? (
           <>
-            <a href="/post" class="bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 text-base font-normal px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+            <a href="/post" class="bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 text-base font-normal px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors whitespace-nowrap">
               Share Work
             </a>
             
@@ -145,8 +145,8 @@ const displayInitial = displayName.charAt(0).toUpperCase();
           </>
         ) : (
           <>
-            <a href="/login" class="text-base font-normal text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200">Log In</a>
-            <a href="/signup" class="text-base font-normal bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Sign Up</a>
+            <a href="/login" class="text-base font-normal text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 whitespace-nowrap">Log In</a>
+            <a href="/signup" class="text-base font-normal bg-stone-800 dark:bg-stone-200 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-xl hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors whitespace-nowrap">Sign Up</a>
           </>
         )}
       </div>

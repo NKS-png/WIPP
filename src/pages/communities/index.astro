@@ -53,31 +53,31 @@ try {
 ---
 
 <BaseLayout title="Communities">
-  <div class="max-w-7xl mx-auto px-6 py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
     
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
       <div>
-        <h1 class="text-4xl font-bold text-neutral-900 dark:text-white">Communities</h1>
-        <p class="text-neutral-500">Find your tribe or start your own.</p>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-900 dark:text-white">Communities</h1>
+        <p class="text-sm sm:text-base text-neutral-500">Find your tribe or start your own.</p>
       </div>
-      <a href="/communities/create" class="btn-primary px-6 py-2 rounded-full">
+      <a href="/communities/create" class="btn-primary px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base self-start sm:self-auto">
         + Create Community
       </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {communities?.map((c) => (
-        <a href={`/c/${c.id}`} class="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1 block">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center text-xl font-bold">
+        <a href={`/c/${c.id}`} class="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 sm:p-6 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1 block">
+          <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0">
               {c.image_url ? <img src={c.image_url} class="w-full h-full rounded-full object-cover"/> : c.name[0]}
             </div>
-            <div>
-              <h3 class="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-blue-600 transition-colors">{c.name}</h3>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-bold text-base sm:text-lg text-neutral-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">{c.name}</h3>
               <p class="text-xs text-neutral-500">{c.members?.[0]?.count || 0} members</p>
             </div>
           </div>
-          <p class="text-sm text-neutral-500 line-clamp-2">{c.description}</p>
+          <p class="text-xs sm:text-sm text-neutral-500 line-clamp-2">{c.description}</p>
         </a>
       ))}
     </div>

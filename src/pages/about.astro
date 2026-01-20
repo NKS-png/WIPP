@@ -89,46 +89,86 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .about-container {
     max-width: 72rem;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .about-container {
+      padding: 0 2rem;
+    }
   }
 
   /* Hero Section */
   .hero-section {
     text-align: center;
-    margin-bottom: 4rem;
-    padding: 3rem 0;
+    margin-bottom: 2rem;
+    padding: 2rem 0;
+  }
+
+  @media (min-width: 640px) {
+    .hero-section {
+      margin-bottom: 4rem;
+      padding: 3rem 0;
+    }
   }
 
   .hero-content h1 {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 400;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-family: 'Georgia', 'Times New Roman', serif;
     @apply text-stone-800 dark:text-stone-200;
   }
 
+  @media (min-width: 640px) {
+    .hero-content h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+  }
+
   .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-style: italic;
     max-width: 32rem;
     margin: 0 auto;
     @apply text-stone-600 dark:text-stone-400;
   }
 
+  @media (min-width: 640px) {
+    .hero-subtitle {
+      font-size: 1.25rem;
+    }
+  }
+
   /* Content Grid */
   .content-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-    margin-bottom: 4rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .content-grid {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
   }
 
   /* Content Cards */
   .content-card {
     @apply bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700;
     border-radius: 16px;
-    padding: 2rem;
+    padding: 1.25rem;
     transition: all 0.3s ease;
+  }
+
+  @media (min-width: 640px) {
+    .content-card {
+      padding: 2rem;
+    }
   }
 
   .content-card:hover {
@@ -138,22 +178,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Featured Card */
   .featured-card {
-    grid-column: span 2;
     @apply bg-stone-50 dark:bg-stone-800 border-stone-300 dark:border-stone-600;
+  }
+
+  @media (min-width: 640px) {
+    .featured-card {
+      grid-column: span 2;
+    }
   }
 
   /* Closing Card */
   .closing-card {
-    grid-column: span 2;
     @apply bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800;
     text-align: center;
   }
 
+  @media (min-width: 640px) {
+    .closing-card {
+      grid-column: span 2;
+    }
+  }
+
   /* Card Icons */
   .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
     display: block;
+  }
+
+  @media (min-width: 640px) {
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
   }
 
   .featured-card .card-icon,
@@ -163,18 +220,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Typography */
   .content-card h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 500;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-family: 'Georgia', 'Times New Roman', serif;
     @apply text-stone-800 dark:text-stone-200;
   }
 
+  @media (min-width: 640px) {
+    .content-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+  }
+
   .content-card p {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
     @apply text-stone-600 dark:text-stone-300;
+  }
+
+  @media (min-width: 640px) {
+    .content-card p {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
   }
 
   .content-card p:last-child {
@@ -183,25 +255,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* CTA Section */
   .cta-section {
-    margin-top: 2rem;
-    padding-top: 2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
     @apply border-t border-stone-200 dark:border-stone-700;
   }
 
+  @media (min-width: 640px) {
+    .cta-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+    }
+  }
+
   .cta-section p {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
     @apply text-blue-600 dark:text-blue-400;
+  }
+
+  @media (min-width: 640px) {
+    .cta-section p {
+      font-size: 1.1rem;
+    }
   }
 
   /* Responsive */
   @media (max-width: 768px) {
     .hero-content h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
     }
 
     .content-grid {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
     }
 
     .featured-card,
@@ -210,7 +300,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     .content-card {
-      padding: 1.5rem;
+      padding: 1.25rem;
+    }
+
+    .content-card h2 {
+      font-size: 1.25rem;
+    }
+
+    .content-card p {
+      font-size: 0.875rem;
+    }
+
+    .card-icon {
+      font-size: 2rem;
     }
   }
 </style>
